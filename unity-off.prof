@@ -1,0 +1,249 @@
+**** Time summary:
+Compilation (2953 times):
+  Parsing (frontend):         3805.9 s
+  Codegen & opts (backend):   1056.0 s
+
+**** Files that took longest to parse (compiler frontend):
+  9006 ms: build/usd/pxr/usd/usd/CMakeFiles/usd.dir/crateFile.cpp.o
+  8529 ms: build/usd/pxr/imaging/hioOpenVDB/CMakeFiles/hioOpenVDB.dir/vdbTextureData.cpp.o
+  8399 ms: build/usd/pxr/usd/sdf/CMakeFiles/_sdf.dir/wrapTypes.cpp.o
+  7068 ms: build/usd/pxr/usd/usd/CMakeFiles/usd.dir/stage.cpp.o
+  6341 ms: build/usd/pxr/base/vt/CMakeFiles/_vt.dir/wrapArrayVec.cpp.o
+  6215 ms: build/usd/pxr/usdImaging/usdImaging/CMakeFiles/usdImaging.dir/instanceAdapter.cpp.o
+  6100 ms: build/usd/pxr/usdImaging/usdImagingGL/CMakeFiles/_usdImagingGL.dir/wrapEngine.cpp.o
+  5933 ms: build/usd/pxr/usdImaging/usdImaging/CMakeFiles/usdImaging.dir/delegate.cpp.o
+  5724 ms: build/usd/pxr/base/vt/CMakeFiles/_vt.dir/wrapArrayIntegral.cpp.o
+  5690 ms: build/usd/pxr/usdImaging/usdSkelImaging/CMakeFiles/usdSkelImaging.dir/skeletonAdapter.cpp.o
+
+**** Files that took longest to codegen (compiler backend):
+ 53870 ms: build/usd/pxr/imaging/hioOpenVDB/CMakeFiles/hioOpenVDB.dir/vdbTextureData.cpp.o
+ 47413 ms: build/usd/pxr/usd/usd/CMakeFiles/usd.dir/stage.cpp.o
+ 26069 ms: build/usd/pxr/usd/usd/CMakeFiles/usd.dir/crateFile.cpp.o
+ 25842 ms: build/usd/pxr/usd/sdf/CMakeFiles/_sdf.dir/wrapTypes.cpp.o
+ 22792 ms: build/usd/pxr/base/vt/CMakeFiles/_vt.dir/wrapArrayIntegral.cpp.o
+ 21657 ms: build/usd/pxr/base/vt/CMakeFiles/_vt.dir/wrapArrayVec.cpp.o
+ 13076 ms: build/usd/pxr/base/vt/CMakeFiles/_vt.dir/wrapArrayRange.cpp.o
+ 12328 ms: build/usd/pxr/base/vt/CMakeFiles/_vt.dir/wrapArrayMatrix.cpp.o
+ 11819 ms: build/usd/pxr/base/vt/CMakeFiles/vt.dir/arrayPyBuffer.cpp.o
+ 10024 ms: build/usd/pxr/usdImaging/usdImaging/CMakeFiles/usdImaging.dir/instanceAdapter.cpp.o
+
+**** Templates that took longest to instantiate:
+  8600 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_Init<std::basic_string<c... (892 times, avg 9 ms)
+  8540 ms: std::unique_ptr<boost::python::objects::py_function_impl_base> (1140 times, avg 7 ms)
+  7713 ms: std::unique_ptr<pxrInternal_v0_22__pxrReserved__::TfType::FactoryBase> (1070 times, avg 7 ms)
+  7610 ms: pxrInternal_v0_22__pxrReserved__::VtValue::GetTypeInfo<std::basic_st... (892 times, avg 8 ms)
+  7327 ms: std::unordered_set<pxrInternal_v0_22__pxrReserved__::TraceDynamicKey... (669 times, avg 10 ms)
+  7205 ms: std::deque<std::unique_ptr<unsigned char[]>>::~deque (670 times, avg 10 ms)
+  7055 ms: pxrInternal_v0_22__pxrReserved__::TfSmallVector<std::pair<pxrInterna... (403 times, avg 17 ms)
+  7015 ms: std::__detail::_Insert_base<pxrInternal_v0_22__pxrReserved__::TraceD... (669 times, avg 10 ms)
+  6943 ms: std::deque<std::unique_ptr<unsigned char[]>>::_M_destroy_data (670 times, avg 10 ms)
+  6813 ms: std::__uniq_ptr_data<boost::python::objects::py_function_impl_base, ... (1140 times, avg 5 ms)
+  6736 ms: std::__uniq_ptr_impl<boost::python::objects::py_function_impl_base, ... (1140 times, avg 5 ms)
+  6706 ms: std::_Hashtable<pxrInternal_v0_22__pxrReserved__::TraceDynamicKey, p... (669 times, avg 10 ms)
+  6632 ms: boost::python::detail::def_helper<const char *> (370 times, avg 17 ms)
+  6138 ms: std::__uniq_ptr_data<pxrInternal_v0_22__pxrReserved__::TfType::Facto... (1070 times, avg 5 ms)
+  6066 ms: std::__uniq_ptr_impl<pxrInternal_v0_22__pxrReserved__::TfType::Facto... (1070 times, avg 5 ms)
+  5842 ms: std::unique_ptr<std::thread::_State> (816 times, avg 7 ms)
+  5839 ms: std::swap_ranges<std::pair<pxrInternal_v0_22__pxrReserved__::SdfPath... (403 times, avg 14 ms)
+  5817 ms: std::unique_ptr<std::pair<pxrInternal_v0_22__pxrReserved__::TfToken,... (789 times, avg 7 ms)
+  5816 ms: std::unique_ptr<std::map<std::basic_string<char>, pxrInternal_v0_22_... (729 times, avg 7 ms)
+  5814 ms: std::iter_swap<std::pair<pxrInternal_v0_22__pxrReserved__::SdfPath, ... (403 times, avg 14 ms)
+  5520 ms: pxrInternal_v0_22__pxrReserved__::UsdObject::SetMetadata<std::vector... (369 times, avg 14 ms)
+  5497 ms: std::swap<pxrInternal_v0_22__pxrReserved__::SdfPath, pxrInternal_v0_... (403 times, avg 13 ms)
+  5495 ms: pxrInternal_v0_22__pxrReserved__::UsdObject::_SetMetadataImpl<std::v... (369 times, avg 14 ms)
+  5488 ms: std::pair<pxrInternal_v0_22__pxrReserved__::SdfPath, pxrInternal_v0_... (403 times, avg 13 ms)
+  5413 ms: pxrInternal_v0_22__pxrReserved__::UsdStage::_SetMetadata<std::vector... (369 times, avg 14 ms)
+  5355 ms: pxrInternal_v0_22__pxrReserved__::SdfAbstractDataConstTypedValue<std... (369 times, avg 14 ms)
+  5269 ms: std::swap<pxrInternal_v0_22__pxrReserved__::SdfChangeList::Entry> (403 times, avg 13 ms)
+  5163 ms: std::unique_ptr<unsigned char[]> (672 times, avg 7 ms)
+  5112 ms: pxrInternal_v0_22__pxrReserved__::SdfAbstractDataConstTypedValue<std... (369 times, avg 13 ms)
+  4885 ms: std::unordered_map<pxrInternal_v0_22__pxrReserved__::TfToken, const ... (397 times, avg 12 ms)
+
+**** Template sets that took longest to instantiate:
+ 95822 ms: std::unique_ptr<$> (12958 times, avg 7 ms)
+ 76665 ms: std::__uniq_ptr_data<$> (12958 times, avg 5 ms)
+ 75712 ms: std::__uniq_ptr_impl<$> (12958 times, avg 5 ms)
+ 44574 ms: std::_Hashtable<$> (8784 times, avg 5 ms)
+ 43430 ms: std::unordered_map<$> (7579 times, avg 5 ms)
+ 41392 ms: std::__and_<$> (63010 times, avg 0 ms)
+ 39845 ms: boost::python::class_<$>::def<$> (5576 times, avg 7 ms)
+ 37813 ms: std::tuple<$> (13537 times, avg 2 ms)
+ 35986 ms: std::vector<$> (31636 times, avg 1 ms)
+ 35133 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_Init<$> (3820 times, avg 9 ms)
+ 35021 ms: boost::python::detail::make_function_aux<$> (6971 times, avg 5 ms)
+ 34639 ms: std::pair<$> (25117 times, avg 1 ms)
+ 32579 ms: boost::python::make_function<$> (6147 times, avg 5 ms)
+ 32232 ms: pxrInternal_v0_22__pxrReserved__::VtValue::GetTypeInfo<$> (3820 times, avg 8 ms)
+ 28275 ms: boost::python::class_<$>::def_impl<$> (4892 times, avg 5 ms)
+ 26742 ms: pxrInternal_v0_22__pxrReserved__::TfHashMap<$> (4644 times, avg 5 ms)
+ 26542 ms: boost::python::objects::py_function::py_function<$> (7114 times, avg 3 ms)
+ 23286 ms: boost::python::objects::caller_py_function_impl<$>::caller_py_functi... (6978 times, avg 3 ms)
+ 22557 ms: std::__detail::_Insert<$> (8777 times, avg 2 ms)
+ 21768 ms: std::__detail::_Insert_base<$> (8777 times, avg 2 ms)
+ 17976 ms: std::__detail::_Hashtable_alloc<$> (8777 times, avg 2 ms)
+ 16579 ms: std::_Vector_base<$> (26219 times, avg 0 ms)
+ 15696 ms: pxrInternal_v0_22__pxrReserved__::SdfAbstractDataConstTypedValue<$>:... (1553 times, avg 10 ms)
+ 15636 ms: pxrInternal_v0_22__pxrReserved__::UsdObject::SetMetadata<$> (1481 times, avg 10 ms)
+ 15591 ms: pxrInternal_v0_22__pxrReserved__::UsdObject::_SetMetadataImpl<$> (1489 times, avg 10 ms)
+ 15255 ms: pxrInternal_v0_22__pxrReserved__::UsdStage::_SetMetadata<$> (1489 times, avg 10 ms)
+ 14913 ms: pxrInternal_v0_22__pxrReserved__::SdfAbstractDataConstTypedValue<$>:... (1542 times, avg 9 ms)
+ 14586 ms: std::unique_ptr<$>::~unique_ptr (6385 times, avg 2 ms)
+ 14483 ms: std::shared_ptr<$> (8803 times, avg 1 ms)
+ 14185 ms: boost::python::class_<$>::def_maybe_overloads<$> (1787 times, avg 7 ms)
+
+**** Functions that took longest to compile:
+  1962 ms: pxrInternal_v0_22__pxrReserved__::internal::GLApi::loadSymbols() (deps/USD/pxr/imaging/garch/glApi.cpp)
+   773 ms: textFileFormatYyparse(pxrInternal_v0_22__pxrReserved__::Sdf_TextPars... (deps/USD/pxr/usd/sdf/textFileFormat.tab.cpp)
+   448 ms: pxrInternal_v0_22__pxrReserved__::HdSt_ResourceBinder::ResolveBindin... (deps/USD/pxr/imaging/hdSt/resourceBinder.cpp)
+   424 ms: pxrInternal_v0_22__pxrReserved__::PcpChanges::DidChange(pxrInternal_... (deps/USD/pxr/usd/pcp/changes.cpp)
+   385 ms: stbi__load_and_postprocess_8bit(stbi__context*, int*, int*, int*, int) (deps/USD/pxr/imaging/hio/stbImage.cpp)
+   306 ms: pxrInternal_v0_22__pxrReserved__::Pcp_BuildPrimIndex(pxrInternal_v0_... (deps/USD/pxr/usd/pcp/primIndex.cpp)
+   268 ms: pxrInternal_v0_22__pxrReserved__::HdMeshUtil::ComputeQuadrangulatedF... (deps/USD/pxr/imaging/hd/meshUtil.cpp)
+   265 ms: pxrInternal_v0_22__pxrReserved__::HdSt_CodeGen::_GenerateShaderParam... (deps/USD/pxr/imaging/hdSt/codeGen.cpp)
+   255 ms: pxrInternal_v0_22__pxrReserved__::HdxSimpleLightTask::Prepare(std::u... (deps/USD/pxr/imaging/hdx/simpleLightTask.cpp)
+   229 ms: pxrInternal_v0_22__pxrReserved__::SdfSchemaBase::_RegisterStandardFi... (deps/USD/pxr/usd/sdf/schema.cpp)
+   209 ms: pxrInternal_v0_22__pxrReserved__::SdfCopySpec(pxrInternal_v0_22__pxr... (deps/USD/pxr/usd/sdf/copyUtils.cpp)
+   196 ms: pxrInternal_v0_22__pxrReserved__::SdfSchemaBase::_UpdateMetadataFrom... (deps/USD/pxr/usd/sdf/schema.cpp)
+   192 ms: pxrInternal_v0_22__pxrReserved__::Usd_ComputeClipSetDefinitionsForPr... (deps/USD/pxr/usd/usd/clipSetDefinition.cpp)
+   187 ms: pxrInternal_v0_22__pxrReserved__::UsdImagingDelegate::_Populate(pxrI... (deps/USD/pxr/usdImaging/usdImaging/delegate.cpp)
+   184 ms: pxrInternal_v0_22__pxrReserved__::PcpComputeNamespaceEdits(pxrIntern... (deps/USD/pxr/usd/pcp/namespaceEdits.cpp)
+   178 ms: pxrInternal_v0_22__pxrReserved__::HdSt_CodeGen::Compile(pxrInternal_... (deps/USD/pxr/imaging/hdSt/codeGen.cpp)
+   178 ms: wrapUsdStage() (deps/USD/pxr/usd/usd/wrapStage.cpp)
+   170 ms: pxrInternal_v0_22__pxrReserved__::HdMeshUtil::ComputeTriangulatedFac... (deps/USD/pxr/imaging/hd/meshUtil.cpp)
+   170 ms: pxrInternal_v0_22__pxrReserved__::pxrUsdPluginUsdAbcAlembicWriter::_... (deps/USD/pxr/usd/plugin/usdAbc/alembicWriter.cpp)
+   158 ms: stbi__create_png_image_raw(stbi__png*, unsigned char*, unsigned int,... (deps/USD/pxr/imaging/hio/stbImage.cpp)
+   156 ms: pxrInternal_v0_22__pxrReserved__::pxr_lz4::LZ4_compress_fast_continu... (deps/USD/pxr/base/tf/pxrLZ4/lz4.cpp)
+   155 ms: pxrInternal_v0_22__pxrReserved__::_UpdateTextureNodes(std::shared_pt... (deps/USD/pxr/imaging/hdSt/materialXFilter.cpp)
+   153 ms: pxrInternal_v0_22__pxrReserved__::UsdSchemaRegistry::_SchemaDefInitH... (deps/USD/pxr/usd/usd/schemaRegistry.cpp)
+   150 ms: pxrInternal_v0_22__pxrReserved__::Hio_StbImage::Write(pxrInternal_v0... (deps/USD/pxr/imaging/hio/stbImage.cpp)
+   148 ms: pxrInternal_v0_22__pxrReserved__::HdSt_ImmediateDrawBatch::_ExecuteD... (deps/USD/pxr/imaging/hdSt/immediateDrawBatch.cpp)
+   145 ms: pxrInternal_v0_22__pxrReserved__::_ConvertHdMaterialNetworkToHdDataS... (deps/USD/pxr/imaging/hd/dataSourceLegacyPrim.cpp)
+   144 ms: pxrInternal_v0_22__pxrReserved__::UsdGeomTokensType::UsdGeomTokensTy... (deps/USD/pxr/usd/usdGeom/tokens.cpp)
+   140 ms: wrapTypes() (deps/USD/pxr/usd/sdf/wrapTypes.cpp)
+   139 ms: pxrInternal_v0_22__pxrReserved__::pxrUsdPluginUsdMtlxReader::_Contex... (deps/USD/pxr/usd/plugin/usdMtlx/reader.cpp)
+   134 ms: pxrInternal_v0_22__pxrReserved__::Sdf_WritePrimMetadata(pxrInternal_... (deps/USD/pxr/usd/sdf/fileIO.cpp)
+
+**** Function sets that took longest to compile / optimize:
+  6783 ms: boost::python::detail::signature_arity<$>::impl<$>::elements() (4070 times, avg 1 ms)
+  4244 ms: bool pxrInternal_v0_22__pxrReserved__::UsdStage::_GetGeneralMetadata... (64 times, avg 66 ms)
+  4006 ms: boost::python::objects::caller_py_function_impl<$>::signature() const (3047 times, avg 1 ms)
+  3525 ms: boost::python::converter::shared_ptr_from_python<$>::construct(_obje... (1452 times, avg 2 ms)
+  2588 ms: void std::vector<$>::_M_range_insert<$>(__gnu_cxx::__normal_iterator... (146 times, avg 17 ms)
+  2140 ms: bool pxrInternal_v0_22__pxrReserved__::UsdStage::_GetMetadataImpl<$>... (64 times, avg 33 ms)
+  1789 ms: std::vector<$>::~vector() (1273 times, avg 1 ms)
+  1721 ms: bool pxrInternal_v0_22__pxrReserved__::_GetListOpMetadataImpl<$>(pxr... (128 times, avg 13 ms)
+  1569 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_RemoteTypeInfo<$>::_GetM... (775 times, avg 2 ms)
+  1538 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_TypeInfoImpl<$>::_Hash(s... (940 times, avg 1 ms)
+  1493 ms: void std::vector<$>::_M_realloc_insert<$>(__gnu_cxx::__normal_iterat... (210 times, avg 7 ms)
+  1462 ms: pxrInternal_v0_22__pxrReserved__::VtArray<$>::_AllocateNew(unsigned ... (720 times, avg 2 ms)
+  1357 ms: pxrInternal_v0_22__pxrReserved__::TfType const& pxrInternal_v0_22__p... (416 times, avg 3 ms)
+  1234 ms: pxrInternal_v0_22__pxrReserved__::VtArray<$>::_DetachIfNotUnique() (662 times, avg 1 ms)
+  1173 ms: void pxrInternal_v0_22__pxrReserved__::VtWrapArray<$>() (47 times, avg 24 ms)
+  1080 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_TypeInfoImpl<$>::_GetPro... (1150 times, avg 0 ms)
+  1078 ms: void pxrInternal_v0_22__pxrReserved__::UsdStage::_GetPropCustomImpl<... (64 times, avg 16 ms)
+  1056 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_TypeInfoImpl<$>::_Destro... (1073 times, avg 0 ms)
+  1033 ms: void pxrInternal_v0_22__pxrReserved__::VtArray<$>::resize<$>(unsigne... (232 times, avg 4 ms)
+  1030 ms: std::__cxx11::basic_string<$> pxrInternal_v0_22__pxrReserved__::Vt_W... (47 times, avg 21 ms)
+  1005 ms: void pxrInternal_v0_22__pxrReserved__::UsdStage::_GetAttrVariability... (64 times, avg 15 ms)
+   986 ms: pxrInternal_v0_22__pxrReserved__::VtArray<$>::~VtArray() (807 times, avg 1 ms)
+   957 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_TypeInfoImpl<$>::_ProxyH... (1532 times, avg 0 ms)
+   951 ms: pxrInternal_v0_22__pxrReserved__::VtValue::_ProxyHelper<$>::GetPyObj... (638 times, avg 1 ms)
+   930 ms: std::__shared_ptr<$>::~__shared_ptr() (788 times, avg 1 ms)
+   915 ms: std::_Hashtable<$>::_M_insert_unique_node(unsigned long, unsigned lo... (379 times, avg 2 ms)
+   887 ms: std::_Hashtable<$>::_M_rehash_aux(unsigned long, std::integral_const... (383 times, avg 2 ms)
+   880 ms: void pxrInternal_v0_22__pxrReserved__::Usd_CrateFile::CrateFile::_Ar... (93 times, avg 9 ms)
+   802 ms: std::_Rb_tree<$>::_M_erase(std::_Rb_tree_node<$>*) (682 times, avg 1 ms)
+   723 ms: pxrInternal_v0_22__pxrReserved__::Sdf_ChildrenUtils<$>::SetChildren(... (11 times, avg 65 ms)
+
+*** Expensive headers:
+972063 ms: /opt/boost/1.70.0/include/boost/preprocessor/iteration/detail/iter/forward1.hpp (included 13959 times, avg 69 ms), included via:
+  wrapTimestamp.cpp.o pyUtils.h pyInterpreter.h object.hpp object_core.hpp call.hpp arg_to_python.hpp function_handle.hpp caller.hpp  (320 ms)
+  wrapTimestamp.cpp.o pyUtils.h pyInterpreter.h object.hpp object_core.hpp call.hpp arg_to_python.hpp function_handle.hpp caller.hpp signature.hpp  (290 ms)
+  debugNotice.cpp.o debugNotice.h notice.h anyWeakPtr.h pyUtils.h pyInterpreter.h object.hpp object_core.hpp call.hpp arg_to_python.hpp function_handle.hpp caller.hpp  (254 ms)
+  wrapEnum.cpp.o class.hpp class.hpp object_core.hpp call.hpp arg_to_python.hpp function_handle.hpp caller.hpp  (254 ms)
+  compExtCompInputSource.cpp.o compExtCompInputSource.h extCompInputSource.h bufferSource.h bufferSpec.h types.h value.h pyObjWrapper.h object_operators.hpp object_core.hpp call.hpp arg_to_python.hpp function_handle.hpp caller.hpp  (252 ms)
+  wrapCallContext.cpp.o class.hpp class.hpp object_core.hpp call.hpp arg_to_python.hpp function_handle.hpp caller.hpp  (251 ms)
+  ...
+
+904090 ms: build/usd/include/pxr/usd/usd/prim.h (included 369 times, avg 2450 ms), included via:
+  modelAPI.cpp.o modelAPI.h apiSchemaBase.h schemaBase.h  (3114 ms)
+  wrapModelAPI.cpp.o modelAPI.h apiSchemaBase.h schemaBase.h  (3095 ms)
+  typed.cpp.o typed.h schemaBase.h  (3095 ms)
+  curves.cpp.o curves.h pointBased.h gprim.h boundable.h xformable.h imageable.h typed.h schemaBase.h  (3093 ms)
+  wrapCollectionAPI.cpp.o collectionAPI.h apiSchemaBase.h schemaBase.h  (3087 ms)
+  collectionAPI.cpp.o collectionAPI.h apiSchemaBase.h schemaBase.h  (3086 ms)
+  ...
+
+887681 ms: build/usd/include/pxr/base/tf/pyObjWrapper.h (included 993 times, avg 893 ms), included via:
+  aov.cpp.o aov.h types.h value.h  (1567 ms)
+  light.cpp.o light.h light.h sprim.h types.h value.h  (1448 ms)
+  pyEnum.cpp.o pyEnum.h  (1444 ms)
+  extComputation.cpp.o extComputation.h sceneDelegate.h aov.h types.h value.h  (1435 ms)
+  pyObjWrapper.cpp.o  (1435 ms)
+  extCompPrimvarBufferSource.cpp.o extCompPrimvarBufferSource.h bufferSource.h bufferSpec.h types.h value.h  (1430 ms)
+  ...
+
+838714 ms: build/usd/include/pxr/usd/usd/object.h (included 374 times, avg 2242 ms), included via:
+  wrapUtils.cpp.o wrapUtils.h  (3054 ms)
+  wrapObject.cpp.o  (3026 ms)
+  object.cpp.o  (2999 ms)
+  relationship.cpp.o relationship.h property.h  (2563 ms)
+  constraintTarget.cpp.o constraintTarget.h attribute.h property.h  (2493 ms)
+  modelAPI.cpp.o modelAPI.h apiSchemaBase.h schemaBase.h prim.h  (2468 ms)
+  ...
+
+835586 ms: build/usd/include/pxr/base/vt/value.h (included 894 times, avg 934 ms), included via:
+  aov.cpp.o aov.h types.h  (1702 ms)
+  light.cpp.o light.h light.h sprim.h types.h  (1579 ms)
+  extComputation.cpp.o extComputation.h sceneDelegate.h aov.h types.h  (1574 ms)
+  command.cpp.o command.h dictionary.h  (1566 ms)
+  coordSys.cpp.o coordSys.h sprim.h types.h  (1560 ms)
+  extCompPrimvarBufferSource.cpp.o extCompPrimvarBufferSource.h bufferSource.h bufferSpec.h types.h  (1557 ms)
+  ...
+
+819676 ms: build/usd/include/pxr/usd/usd/schemaBase.h (included 319 times, avg 2569 ms), included via:
+  modelAPI.cpp.o modelAPI.h apiSchemaBase.h  (3128 ms)
+  typed.cpp.o typed.h  (3108 ms)
+  wrapModelAPI.cpp.o modelAPI.h apiSchemaBase.h  (3108 ms)
+  curves.cpp.o curves.h pointBased.h gprim.h boundable.h xformable.h imageable.h typed.h  (3105 ms)
+  wrapCollectionAPI.cpp.o collectionAPI.h apiSchemaBase.h  (3099 ms)
+  collectionAPI.cpp.o collectionAPI.h apiSchemaBase.h  (3099 ms)
+  ...
+
+810779 ms: build/usd/include/pxr/usd/sdf/layer.h (included 499 times, avg 1624 ms), included via:
+  utils.cpp.o utils.h  (2610 ms)
+  siteUtils.cpp.o siteUtils.h site.h  (2576 ms)
+  wrapLayer.cpp.o  (2573 ms)
+  pyUtils.cpp.o pyUtils.h  (2555 ms)
+  wrapNotice.cpp.o  (2554 ms)
+  layer.cpp.o  (2548 ms)
+  ...
+
+753846 ms: build/usd/include/pxr/usd/usd/primData.h (included 377 times, avg 1999 ms), included via:
+  primDataHandle.cpp.o  (2383 ms)
+  relationship.cpp.o relationship.h property.h object.h  (2315 ms)
+  constraintTarget.cpp.o constraintTarget.h attribute.h property.h object.h  (2243 ms)
+  wrapUtils.cpp.o wrapUtils.h object.h  (2226 ms)
+  modelAPI.cpp.o modelAPI.h apiSchemaBase.h schemaBase.h prim.h object.h  (2220 ms)
+  notice.cpp.o notice.h object.h  (2218 ms)
+  ...
+
+701945 ms: build/usd/include/pxr/usd/usd/schemaRegistry.h (included 397 times, avg 1768 ms), included via:
+  wrapPrimDefinition.cpp.o primDefinition.h  (2614 ms)
+  primTypeInfoCache.cpp.o primTypeInfoCache.h primTypeInfo.h primDefinition.h  (2604 ms)
+  wrapPrimTypeInfo.cpp.o primTypeInfo.h primDefinition.h  (2593 ms)
+  primTypeInfo.cpp.o primTypeInfo.h primDefinition.h  (2589 ms)
+  primDefinition.cpp.o primDefinition.h  (2580 ms)
+  schemaRegistry.cpp.o  (2577 ms)
+  ...
+
+701254 ms: build/usd/include/pxr/usd/usd/primDefinition.h (included 381 times, avg 1840 ms), included via:
+  wrapPrimDefinition.cpp.o  (2626 ms)
+  primTypeInfoCache.cpp.o primTypeInfoCache.h primTypeInfo.h  (2616 ms)
+  wrapPrimTypeInfo.cpp.o primTypeInfo.h  (2605 ms)
+  primTypeInfo.cpp.o primTypeInfo.h  (2602 ms)
+  primDefinition.cpp.o  (2592 ms)
+  relationship.cpp.o relationship.h property.h object.h primData.h  (2139 ms)
+  ...
+
+  done in 2.3s.

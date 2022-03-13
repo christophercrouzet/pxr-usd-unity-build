@@ -1,0 +1,1597 @@
+diff --git a/pxr/base/arch/attributes.cpp b/pxr/base/arch/attributes.cpp
+index 5cc043687..8a37d2188 100644
+--- a/pxr/base/arch/attributes.cpp
++++ b/pxr/base/arch/attributes.cpp
+@@ -38,7 +38,7 @@
+ 
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+-namespace {
++namespace pxrBaseArchAttributes {
+ 
+ // Minimal access to a Mach-O header, providing just enough to find a
+ // named section in a named segment.  This assumes the headers have
+@@ -241,7 +241,7 @@ PXR_NAMESPACE_CLOSE_SCOPE
+ 
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+-namespace {
++namespace pxrBaseArchAttributes {
+ 
+ // Minimal access to an NT header, providing just enough to find a
+ // named section.  This assumes the headers have been mapped into the
+@@ -373,14 +373,14 @@ Arch_ConstructorInit::Arch_ConstructorInit()
+ {
+     // Get the module containing this object, which we expect to be static
+     // global.
+-    RunConstructors(GetCurrentModule(this));
++    pxrBaseArchAttributes::RunConstructors(pxrBaseArchAttributes::GetCurrentModule(this));
+ }
+ 
+ Arch_ConstructorInit::~Arch_ConstructorInit()
+ {
+     // Get the module containing this object, which we expect to be static
+     // global.
+-    RunDestructors(GetCurrentModule(this));
++    pxrBaseArchAttributes::RunDestructors(pxrBaseArchAttributes::GetCurrentModule(this));
+ }
+ 
+ PXR_NAMESPACE_CLOSE_SCOPE
+diff --git a/pxr/base/arch/fileSystem.cpp b/pxr/base/arch/fileSystem.cpp
+index 21815d125..77ca2d4b5 100644
+--- a/pxr/base/arch/fileSystem.cpp
++++ b/pxr/base/arch/fileSystem.cpp
+@@ -61,7 +61,7 @@ PXR_NAMESPACE_OPEN_SCOPE
+ 
+ 
+ #if defined (ARCH_OS_WINDOWS)
+-namespace {
++namespace pxrBaseArchFileSystem {
+ static inline HANDLE _FileToWinHANDLE(FILE *file)
+ {
+     return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
+@@ -412,7 +412,7 @@ ArchGetStatusChangeTime(const struct stat& st)
+ 
+ #if defined (ARCH_OS_WINDOWS)
+ 
+-namespace {
++namespace pxrBaseArchFileSystem {
+ int64_t
+ _GetFileLength(HANDLE handle)
+ {
+@@ -433,7 +433,7 @@ ArchGetFileLength(FILE *file)
+     return fstat(fileno(file), &buf) < 0 ? -1 :
+         static_cast<int64_t>(buf.st_size);
+ #elif defined (ARCH_OS_WINDOWS)
+-    return _GetFileLength(_FileToWinHANDLE(file));
++    return pxrBaseArchFileSystem::_GetFileLength(pxrBaseArchFileSystem::_FileToWinHANDLE(file));
+ #else
+ #error Unknown system architecture
+ #endif
+@@ -453,7 +453,7 @@ ArchGetFileLength(const char* fileName)
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+     if (handle) {
+-        const auto result = _GetFileLength(handle);
++        const auto result = pxrBaseArchFileSystem::_GetFileLength(handle);
+         CloseHandle(handle);
+         return result;
+     }
+@@ -486,7 +486,7 @@ ArchGetFileName(FILE *file)
+ #elif defined (ARCH_OS_WINDOWS)
+     static constexpr DWORD bufSize =
+         sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * 4096;
+-    HANDLE hfile = _FileToWinHANDLE(file);
++    HANDLE hfile = pxrBaseArchFileSystem::_FileToWinHANDLE(file);
+     auto fileNameInfo = reinterpret_cast<PFILE_NAME_INFO>(malloc(bufSize));
+     std::string result;
+     if (GetFileInformationByHandleEx(
+@@ -537,7 +537,7 @@ ArchMakeTmpFile(const std::string& prefix, std::string* pathname)
+ 
+ #if defined (ARCH_OS_WINDOWS)
+ 
+-namespace {
++namespace pxrBaseArchFileSystem {
+ std::string
+ MakeUnique(
+     const std::string& sTemplate,
+@@ -589,7 +589,7 @@ ArchMakeTmpFile(const std::string& tmpdir,
+ #if defined(ARCH_OS_WINDOWS)
+     int fd = -1;
+     auto cTemplate =
+-        MakeUnique(sTemplate, [&fd](const char* name){
++        pxrBaseArchFileSystem::MakeUnique(sTemplate, [&fd](const char* name){
+                     _wsopen_s(&fd, ArchWindowsUtf8ToUtf16(name).c_str(),
+                               _O_CREAT | _O_EXCL | _O_RDWR | _O_BINARY,
+                               _SH_DENYNO, _S_IREAD | _S_IWRITE);
+@@ -632,7 +632,7 @@ ArchMakeTmpSubdir(const std::string& tmpdir,
+ 
+ #if defined(ARCH_OS_WINDOWS)
+     retstr =
+-        MakeUnique(sTemplate, [](const char* name){
++        pxrBaseArchFileSystem::MakeUnique(sTemplate, [](const char* name){
+             return CreateDirectoryW(
+                 ArchWindowsUtf8ToUtf16(name).c_str(), NULL) != FALSE;
+         });
+@@ -734,7 +734,7 @@ Arch_MapFileImpl(FILE *file, std::string *errMsg)
+     DWORD maxSizeHigh = static_cast<DWORD>(unsignedLength >> 32);
+     DWORD maxSizeLow = static_cast<DWORD>(unsignedLength);
+     HANDLE hFileMap = CreateFileMapping(
+-        _FileToWinHANDLE(file), NULL,
++        pxrBaseArchFileSystem::_FileToWinHANDLE(file), NULL,
+         PAGE_READONLY /* allow read-only or copy-on-write */,
+         maxSizeHigh, maxSizeLow, NULL);
+     if (hFileMap == NULL)
+@@ -877,7 +877,7 @@ ArchPRead(FILE *file, void *buffer, size_t count, int64_t offset)
+         return 0;
+ 
+ #if defined(ARCH_OS_WINDOWS)
+-    HANDLE hFile = _FileToWinHANDLE(file);
++    HANDLE hFile = pxrBaseArchFileSystem::_FileToWinHANDLE(file);
+ 
+     OVERLAPPED overlapped;
+     memset(&overlapped, 0, sizeof(overlapped));
+@@ -932,7 +932,7 @@ ArchPWrite(FILE *file, void const *bytes, size_t count, int64_t offset)
+         return -1;
+ 
+ #if defined(ARCH_OS_WINDOWS)
+-    HANDLE hFile = _FileToWinHANDLE(file);
++    HANDLE hFile = pxrBaseArchFileSystem::_FileToWinHANDLE(file);
+ 
+     OVERLAPPED overlapped;
+     memset(&overlapped, 0, sizeof(overlapped));
+diff --git a/pxr/base/arch/library.cpp b/pxr/base/arch/library.cpp
+index 65e6b4bd2..0e937848a 100644
+--- a/pxr/base/arch/library.cpp
++++ b/pxr/base/arch/library.cpp
+@@ -35,7 +35,7 @@
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+ #if defined(ARCH_OS_WINDOWS)
+-namespace {
++namespace pxrBaseArchLibrary {
+ DWORD arch_lastLibraryError = 0;
+ }
+ #endif
+@@ -43,12 +43,12 @@ DWORD arch_lastLibraryError = 0;
+ void* ArchLibraryOpen(const std::string &filename, int flag)
+ {
+ #if defined(ARCH_OS_WINDOWS)
+-    arch_lastLibraryError = 0;
++    pxrBaseArchLibrary::arch_lastLibraryError = 0;
+     if (void* result = LoadLibrary(filename.c_str())) {
+         return result;
+     }
+     else {
+-        arch_lastLibraryError = GetLastError();
++        pxrBaseArchLibrary::arch_lastLibraryError = GetLastError();
+         return nullptr;
+     }
+ #else
+@@ -61,7 +61,7 @@ void* ArchLibraryOpen(const std::string &filename, int flag)
+ std::string ArchLibraryError()
+ {
+ #if defined(ARCH_OS_WINDOWS)
+-    const DWORD error = arch_lastLibraryError;
++    const DWORD error = pxrBaseArchLibrary::arch_lastLibraryError;
+     return error ? ArchStrSysError(error) : std::string();
+ #else
+     const char* const error = dlerror();
+@@ -72,12 +72,12 @@ std::string ArchLibraryError()
+ int ArchLibraryClose(void* handle)
+ {
+ #if defined(ARCH_OS_WINDOWS)
+-    arch_lastLibraryError = 0;
++    pxrBaseArchLibrary::arch_lastLibraryError = 0;
+     // dlclose() returns 0 on success and non-zero on error, the opposite of
+     // FreeLibrary().
+     int status = ::FreeLibrary(reinterpret_cast<HMODULE>(handle)) ? 0 : -1;
+     if (status) {
+-        arch_lastLibraryError = GetLastError();
++        pxrBaseArchLibrary::arch_lastLibraryError = GetLastError();
+     }
+ #else
+     int status = dlclose(handle);
+diff --git a/pxr/base/gf/wrapMatrix.template.cpp b/pxr/base/gf/wrapMatrix.template.cpp
+index 6b2147d00..5c18469e4 100644
+--- a/pxr/base/gf/wrapMatrix.template.cpp
++++ b/pxr/base/gf/wrapMatrix.template.cpp
+@@ -54,7 +54,7 @@
+ 
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+-namespace {
++namespace pxrBaseGfWrapMatrix{{ SUFFIX }} {
+ 
+ ////////////////////////////////////////////////////////////////////////
+ // Python buffer protocol support.
+@@ -292,8 +292,8 @@ void wrapMatrix{{ SUFFIX }}()
+     
+     boost::python::class_<This> cls( "Matrix{{ SUFFIX }}", boost::python::no_init);
+     cls
+-        .def_pickle({{ MAT }}_Pickle_Suite())
+-	.def("__init__", boost::python::make_constructor(__init__))
++        .def_pickle(pxrBaseGfWrapMatrix{{ SUFFIX }}::{{ MAT }}_Pickle_Suite())
++	.def("__init__", boost::python::make_constructor(pxrBaseGfWrapMatrix{{ SUFFIX }}::__init__))
+         .def(boost::python::init< const GfMatrix{{ DIM }}d & >())
+         .def(boost::python::init< const GfMatrix{{ DIM }}f & >())
+         .def(boost::python::init< int >())
+@@ -309,15 +309,15 @@ void wrapMatrix{{ SUFFIX }}()
+ 
+         .def( TfTypePythonClass() )
+ 
+-        .add_static_property("dimension", get_dimension)
+-        .def( "__len__", __len__, "Return number of rows" )
++        .add_static_property("dimension", pxrBaseGfWrapMatrix{{ SUFFIX }}::get_dimension)
++        .def( "__len__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__len__, "Return number of rows" )
+ 
+-        .def( "__getitem__", __getitem__{{ SCL }} )
+-        .def( "__getitem__", __getitem__vector )
+-        .def( "__setitem__", __setitem__{{ SCL }} )
+-        .def( "__setitem__", __setitem__vector )
+-        .def( "__contains__", __contains__{{ SCL }} )
+-        .def( "__contains__", __contains__vector, "Check rows against GfVec"  )
++        .def( "__getitem__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__getitem__{{ SCL }} )
++        .def( "__getitem__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__getitem__vector )
++        .def( "__setitem__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__setitem__{{ SCL }} )
++        .def( "__setitem__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__setitem__vector )
++        .def( "__contains__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__contains__{{ SCL }} )
++        .def( "__contains__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__contains__vector, "Check rows against GfVec"  )
+ {% block customSpecialMethods %}
+ {% endblock customSpecialMethods %}
+ 
+@@ -340,7 +340,7 @@ void wrapMatrix{{ SUFFIX }}()
+         .def("GetColumn", &This::GetColumn)
+ 
+         .def("GetTranspose", &This::GetTranspose)
+-        .def("GetInverse", GetInverseWrapper)
++        .def("GetInverse", pxrBaseGfWrapMatrix{{ SUFFIX }}::GetInverseWrapper)
+ 
+         .def("GetDeterminant", &This::GetDeterminant)
+ {% block customDefs %}
+@@ -380,13 +380,13 @@ void wrapMatrix{{ SUFFIX }}()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__truediv__ )
+ #endif
+ 
+ {% block customXformDefs %}
+ {% endblock customXformDefs %}
+-        .def("__repr__", _Repr)
+-        .def("__hash__", __hash__)
++        .def("__repr__", pxrBaseGfWrapMatrix{{ SUFFIX }}::_Repr)
++        .def("__hash__", pxrBaseGfWrapMatrix{{ SUFFIX }}::__hash__)
+ 
+         ;
+     boost::python::to_python_converter<std::vector<This>,
+@@ -397,7 +397,7 @@ void wrapMatrix{{ SUFFIX }}()
+     // this type, and set the type flags to indicate that this type supports the
+     // buffer protocol.
+     auto *typeObj = reinterpret_cast<PyTypeObject *>(cls.ptr());
+-    typeObj->tp_as_buffer = &bufferProcs;
++    typeObj->tp_as_buffer = &pxrBaseGfWrapMatrix{{ SUFFIX }}::bufferProcs;
+     typeObj->tp_flags |= (TfPy_TPFLAGS_HAVE_NEWBUFFER |
+                           TfPy_TPFLAGS_HAVE_GETCHARBUFFER);
+ }
+diff --git a/pxr/base/gf/wrapMatrix2d.cpp b/pxr/base/gf/wrapMatrix2d.cpp
+index 679b64eef..92b293af1 100644
+--- a/pxr/base/gf/wrapMatrix2d.cpp
++++ b/pxr/base/gf/wrapMatrix2d.cpp
+@@ -363,7 +363,7 @@ void wrapMatrix2d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix2d::__truediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapMatrix2d::_Repr)
+diff --git a/pxr/base/gf/wrapMatrix2f.cpp b/pxr/base/gf/wrapMatrix2f.cpp
+index e50384483..c3eeb925c 100644
+--- a/pxr/base/gf/wrapMatrix2f.cpp
++++ b/pxr/base/gf/wrapMatrix2f.cpp
+@@ -361,7 +361,7 @@ void wrapMatrix2f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix2f::__truediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapMatrix2f::_Repr)
+diff --git a/pxr/base/gf/wrapMatrix3d.cpp b/pxr/base/gf/wrapMatrix3d.cpp
+index 85dcd12c3..b0beeb4f3 100644
+--- a/pxr/base/gf/wrapMatrix3d.cpp
++++ b/pxr/base/gf/wrapMatrix3d.cpp
+@@ -381,7 +381,7 @@ void wrapMatrix3d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix3d::__truediv__ )
+ #endif
+ 
+         .def("SetScale", (This & (This::*)( const GfVec3d & ))&This::SetScale, boost::python::return_self<>())
+diff --git a/pxr/base/gf/wrapMatrix3f.cpp b/pxr/base/gf/wrapMatrix3f.cpp
+index fc9ad1d6c..fa255d0e9 100644
+--- a/pxr/base/gf/wrapMatrix3f.cpp
++++ b/pxr/base/gf/wrapMatrix3f.cpp
+@@ -379,7 +379,7 @@ void wrapMatrix3f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix3f::__truediv__ )
+ #endif
+ 
+         .def("SetScale", (This & (This::*)( const GfVec3f & ))&This::SetScale, boost::python::return_self<>())
+diff --git a/pxr/base/gf/wrapMatrix4.template.cpp b/pxr/base/gf/wrapMatrix4.template.cpp
+index f87b6d984..b10e4238e 100644
+--- a/pxr/base/gf/wrapMatrix4.template.cpp
++++ b/pxr/base/gf/wrapMatrix4.template.cpp
+@@ -137,9 +137,9 @@ static {{ MAT }} RemoveScaleShearWrapper( const {{ MAT }} &self ) {
+         .def("ExtractRotationMatrix", &This::ExtractRotationMatrix)
+         .def("ExtractRotationQuat", &This::ExtractRotationQuat)
+ 
+-        .def("Factor", FactorWithEpsilon)
+-        .def("Factor", Factor)
+-        .def("RemoveScaleShear", RemoveScaleShearWrapper)
++        .def("Factor", pxrBaseGfWrapMatrix{{ SUFFIX }}::FactorWithEpsilon)
++        .def("Factor", pxrBaseGfWrapMatrix{{ SUFFIX }}::Factor)
++        .def("RemoveScaleShear", pxrBaseGfWrapMatrix{{ SUFFIX }}::RemoveScaleShearWrapper)
+         
+         .def("Transform",
+ 	     (GfVec3f (This::*)(const GfVec3f &) const)&This::Transform)
+diff --git a/pxr/base/gf/wrapMatrix4d.cpp b/pxr/base/gf/wrapMatrix4d.cpp
+index 4decad885..08f40cfd9 100644
+--- a/pxr/base/gf/wrapMatrix4d.cpp
++++ b/pxr/base/gf/wrapMatrix4d.cpp
+@@ -420,7 +420,7 @@ void wrapMatrix4d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix4d::__truediv__ )
+ #endif
+ 
+         .def("SetTransform",
+diff --git a/pxr/base/gf/wrapMatrix4f.cpp b/pxr/base/gf/wrapMatrix4f.cpp
+index e21697cf6..4814fb2be 100644
+--- a/pxr/base/gf/wrapMatrix4f.cpp
++++ b/pxr/base/gf/wrapMatrix4f.cpp
+@@ -418,7 +418,7 @@ void wrapMatrix4f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
++        .def("__truediv__", pxrBaseGfWrapMatrix4f::__truediv__ )
+ #endif
+ 
+         .def("SetTransform",
+diff --git a/pxr/base/gf/wrapQuat.template.cpp b/pxr/base/gf/wrapQuat.template.cpp
+index 2151d1ea0..a05f64ff4 100644
+--- a/pxr/base/gf/wrapQuat.template.cpp
++++ b/pxr/base/gf/wrapQuat.template.cpp
+@@ -49,7 +49,7 @@
+ 
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+-namespace {
++namespace pxrBaseGfWrapQuat{{ SUFFIX }} {
+ 
+ static std::string __repr__({{ QUAT }} const &self) {
+     return TF_PY_REPR_PREFIX + "Quat{{ SUFFIX }}(" +
+@@ -99,7 +99,7 @@ void wrapQuat{{ SUFFIX }}()
+         GfDot);
+     
+     boost::python::class_<{{ QUAT }}>("Quat{{ SUFFIX }}", boost::python::no_init)
+-        .def("__init__", boost::python::make_constructor(__init__))
++        .def("__init__", boost::python::make_constructor(pxrBaseGfWrapQuat{{ SUFFIX }}::__init__))
+                           
+         .def(TfTypePythonClass())
+ 
+@@ -156,11 +156,11 @@ void wrapQuat{{ SUFFIX }}()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapQuat{{ SUFFIX }}::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapQuat{{ SUFFIX }}::__itruediv__ )
+ #endif
+ 
+-        .def("__repr__", __repr__)
++        .def("__repr__", pxrBaseGfWrapQuat{{ SUFFIX }}::__repr__)
+ 
+         ;
+ 
+diff --git a/pxr/base/gf/wrapQuatd.cpp b/pxr/base/gf/wrapQuatd.cpp
+index abecba2ec..ea88956ed 100644
+--- a/pxr/base/gf/wrapQuatd.cpp
++++ b/pxr/base/gf/wrapQuatd.cpp
+@@ -153,8 +153,8 @@ void wrapQuatd()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapQuatd::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapQuatd::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapQuatd::__repr__)
+diff --git a/pxr/base/gf/wrapQuaternion.cpp b/pxr/base/gf/wrapQuaternion.cpp
+index 97dbddf47..fc5a3c372 100644
+--- a/pxr/base/gf/wrapQuaternion.cpp
++++ b/pxr/base/gf/wrapQuaternion.cpp
+@@ -119,8 +119,8 @@ void wrapQuaternion()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapQuaternion::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapQuaternion::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapQuaternion::_Repr)
+diff --git a/pxr/base/gf/wrapQuatf.cpp b/pxr/base/gf/wrapQuatf.cpp
+index 8813f2a0c..92e97097a 100644
+--- a/pxr/base/gf/wrapQuatf.cpp
++++ b/pxr/base/gf/wrapQuatf.cpp
+@@ -154,8 +154,8 @@ void wrapQuatf()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapQuatf::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapQuatf::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapQuatf::__repr__)
+diff --git a/pxr/base/gf/wrapQuath.cpp b/pxr/base/gf/wrapQuath.cpp
+index 08f57d8f2..09070bfbb 100644
+--- a/pxr/base/gf/wrapQuath.cpp
++++ b/pxr/base/gf/wrapQuath.cpp
+@@ -155,8 +155,8 @@ void wrapQuath()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapQuath::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapQuath::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapQuath::__repr__)
+diff --git a/pxr/base/gf/wrapRange.template.cpp b/pxr/base/gf/wrapRange.template.cpp
+index cc235bc0c..0b3dcba67 100644
+--- a/pxr/base/gf/wrapRange.template.cpp
++++ b/pxr/base/gf/wrapRange.template.cpp
+@@ -46,7 +46,7 @@
+ 
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+-namespace {
++namespace pxrBaseGfWrapRange{{ SUFFIX }} {
+ 
+ static const int _dimension = {{ DIM }};
+ 
+@@ -85,7 +85,7 @@ void wrapRange{{ SUFFIX }}()
+         
+         .def(TfTypePythonClass())
+ 
+-        .def_readonly("dimension", _dimension)
++        .def_readonly("dimension", pxrBaseGfWrapRange{{ SUFFIX }}::_dimension)
+         
+         .add_property("min", getMin, &{{ RNG }}::SetMin)
+         .add_property("max", getMax, &{{ RNG }}::SetMax)
+@@ -144,12 +144,12 @@ void wrapRange{{ SUFFIX }}()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange{{ SUFFIX }}::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange{{ SUFFIX }}::__itruediv__ )
+ #endif
+ 
+-        .def("__repr__", _Repr)
+-        .def("__hash__", __hash__)
++        .def("__repr__", pxrBaseGfWrapRange{{ SUFFIX }}::_Repr)
++        .def("__hash__", pxrBaseGfWrapRange{{ SUFFIX }}::__hash__)
+ 
+ {% if DIM == 2 %}
+         .def("GetCorner", &{{ RNG }}::GetCorner)
+diff --git a/pxr/base/gf/wrapRange1d.cpp b/pxr/base/gf/wrapRange1d.cpp
+index 7e1dfa047..6568be0ea 100644
+--- a/pxr/base/gf/wrapRange1d.cpp
++++ b/pxr/base/gf/wrapRange1d.cpp
+@@ -140,8 +140,8 @@ void wrapRange1d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange1d::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange1d::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapRange1d::_Repr)
+diff --git a/pxr/base/gf/wrapRange1f.cpp b/pxr/base/gf/wrapRange1f.cpp
+index 0e1a8a1a2..3acdac523 100644
+--- a/pxr/base/gf/wrapRange1f.cpp
++++ b/pxr/base/gf/wrapRange1f.cpp
+@@ -140,8 +140,8 @@ void wrapRange1f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange1f::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange1f::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapRange1f::_Repr)
+diff --git a/pxr/base/gf/wrapRange2d.cpp b/pxr/base/gf/wrapRange2d.cpp
+index 6b7107a65..de0b546de 100644
+--- a/pxr/base/gf/wrapRange2d.cpp
++++ b/pxr/base/gf/wrapRange2d.cpp
+@@ -140,8 +140,8 @@ void wrapRange2d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange2d::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange2d::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapRange2d::_Repr)
+diff --git a/pxr/base/gf/wrapRange2f.cpp b/pxr/base/gf/wrapRange2f.cpp
+index 3b975bce8..7a2e76c93 100644
+--- a/pxr/base/gf/wrapRange2f.cpp
++++ b/pxr/base/gf/wrapRange2f.cpp
+@@ -140,8 +140,8 @@ void wrapRange2f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange2f::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange2f::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapRange2f::_Repr)
+diff --git a/pxr/base/gf/wrapRange3d.cpp b/pxr/base/gf/wrapRange3d.cpp
+index 0350f58dc..475d78564 100644
+--- a/pxr/base/gf/wrapRange3d.cpp
++++ b/pxr/base/gf/wrapRange3d.cpp
+@@ -140,8 +140,8 @@ void wrapRange3d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange3d::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange3d::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapRange3d::_Repr)
+diff --git a/pxr/base/gf/wrapRange3f.cpp b/pxr/base/gf/wrapRange3f.cpp
+index 401959aea..1e37ee12a 100644
+--- a/pxr/base/gf/wrapRange3f.cpp
++++ b/pxr/base/gf/wrapRange3f.cpp
+@@ -140,8 +140,8 @@ void wrapRange3f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRange3f::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRange3f::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapRange3f::_Repr)
+diff --git a/pxr/base/gf/wrapRotation.cpp b/pxr/base/gf/wrapRotation.cpp
+index 8b9f06dd8..425ba3e07 100644
+--- a/pxr/base/gf/wrapRotation.cpp
++++ b/pxr/base/gf/wrapRotation.cpp
+@@ -251,8 +251,8 @@ void wrapRotation()
+  #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapRotation::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapRotation::__itruediv__ )
+ #endif
+ 
+        .def("__repr__", pxrBaseGfWrapRotation::_Repr)
+diff --git a/pxr/base/gf/wrapSize2.cpp b/pxr/base/gf/wrapSize2.cpp
+index 84b1b508d..4b64e5af4 100644
+--- a/pxr/base/gf/wrapSize2.cpp
++++ b/pxr/base/gf/wrapSize2.cpp
+@@ -123,8 +123,8 @@ void wrapSize2()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapSize2::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapSize2::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapSize2::_Repr)
+diff --git a/pxr/base/gf/wrapSize3.cpp b/pxr/base/gf/wrapSize3.cpp
+index 455b44e94..be1a34558 100644
+--- a/pxr/base/gf/wrapSize3.cpp
++++ b/pxr/base/gf/wrapSize3.cpp
+@@ -126,8 +126,8 @@ void wrapSize3()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapSize3::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapSize3::__itruediv__ )
+ #endif
+ 
+         .def("__repr__", pxrBaseGfWrapSize3::_Repr)
+diff --git a/pxr/base/gf/wrapVec.template.cpp b/pxr/base/gf/wrapVec.template.cpp
+index 1d43180c2..bd706ca24 100644
+--- a/pxr/base/gf/wrapVec.template.cpp
++++ b/pxr/base/gf/wrapVec.template.cpp
+@@ -60,7 +60,7 @@
+ 
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+-namespace {
++namespace pxrBaseGfWrapVec{{ SUFFIX }} {
+ 
+ ////////////////////////////////////////////////////////////////////////
+ // Python buffer protocol support.
+@@ -440,14 +440,14 @@ void wrapVec{{ SUFFIX }}()
+     boost::python::def("CompMult", (Vec (*)(const Vec &v1, const Vec&v2))GfCompMult);
+     boost::python::def("GetLength", (Scalar (*)(const Vec &v))GfGetLength);
+     boost::python::def("GetNormalized", (Vec (*)(const Vec &v, Scalar eps))
+-        GfGetNormalized, GetNormalized_overloads());
++        GfGetNormalized, pxrBaseGfWrapVec{{ SUFFIX }}::GetNormalized_overloads());
+     boost::python::def("GetProjection", (Vec (*)(const Vec &a, const Vec &b))
+         GfGetProjection);
+     boost::python::def("GetComplement", (Vec (*)(const Vec &a, const Vec &b))
+         GfGetComplement);
+     boost::python::def("IsClose", (bool (*)(const Vec &v1, const Vec &v2, double))
+         GfIsClose);
+-    boost::python::def("Normalize", NormalizeHelper, Normalize_overloads());
++    boost::python::def("Normalize", pxrBaseGfWrapVec{{ SUFFIX }}::NormalizeHelper, pxrBaseGfWrapVec{{ SUFFIX }}::Normalize_overloads());
+         
+ {% if DIM == 3 %}
+     boost::python::def("Cross", (Vec (*)(const Vec &v1, const Vec &v2))GfCross);
+@@ -459,12 +459,12 @@ void wrapVec{{ SUFFIX }}()
+ 
+     boost::python::class_<{{ VEC }}> cls("Vec{{ SUFFIX }}", boost::python::no_init);
+     cls
+-        .def("__init__", boost::python::make_constructor(__init__<Vec>))
++        .def("__init__", boost::python::make_constructor(pxrBaseGfWrapVec{{ SUFFIX }}::__init__<Vec>))
+ 
+         // A tag indicating that this is a GfVec class, for internal use.
+         .def_readonly("__isGfVec", _true)
+ 
+-        .def_pickle(PickleSuite())
++        .def_pickle(pxrBaseGfWrapVec{{ SUFFIX }}::PickleSuite())
+ 
+ {% if IS_FLOATING_POINT(SCL) %}
+         // Conversion from other vec types.
+@@ -479,12 +479,12 @@ void wrapVec{{ SUFFIX }}()
+ 
+         .def(TfTypePythonClass())
+ 
+-        .def("__len__", __len__ )
+-        .def("__getitem__", __getitem__ )
+-        .def("__getitem__", __getslice__ )
+-        .def("__setitem__", __setitem__ )
+-        .def("__setitem__", __setslice__ )
+-        .def("__contains__", __contains__ )
++        .def("__len__", pxrBaseGfWrapVec{{ SUFFIX }}::__len__ )
++        .def("__getitem__", pxrBaseGfWrapVec{{ SUFFIX }}::__getitem__ )
++        .def("__getitem__", pxrBaseGfWrapVec{{ SUFFIX }}::__getslice__ )
++        .def("__setitem__", pxrBaseGfWrapVec{{ SUFFIX }}::__setitem__ )
++        .def("__setitem__", pxrBaseGfWrapVec{{ SUFFIX }}::__setslice__ )
++        .def("__contains__", pxrBaseGfWrapVec{{ SUFFIX }}::__contains__ )
+ 
+         .def_readonly("dimension", _dimension)
+         
+@@ -514,8 +514,8 @@ void wrapVec{{ SUFFIX }}()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec{{ SUFFIX }}::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec{{ SUFFIX }}::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+@@ -529,23 +529,23 @@ void wrapVec{{ SUFFIX }}()
+ {% if IS_FLOATING_POINT(SCL) %}
+         .def("GetComplement", &Vec::GetComplement)
+         .def("GetLength", &Vec::GetLength)
+-        .def("GetNormalized", &Vec::GetNormalized, VecGetNormalized_overloads())
++        .def("GetNormalized", &Vec::GetNormalized, pxrBaseGfWrapVec{{ SUFFIX }}::VecGetNormalized_overloads())
+         .def("GetProjection", &Vec::GetProjection)
+-        .def("Normalize", &Vec::Normalize, VecNormalize_overloads())
++        .def("Normalize", &Vec::Normalize, pxrBaseGfWrapVec{{ SUFFIX }}::VecNormalize_overloads())
+ {% if DIM == 3 %}
+         .def(boost::python::self ^ boost::python::self)
+         .def("GetCross", (Vec (*)(const Vec &v1, const Vec &v2))GfCross)
+         .def("OrthogonalizeBasis",
+-             OrthogonalizeBasisHelper, OrthogonalizeBasis_overloads())
++             pxrBaseGfWrapVec{{ SUFFIX }}::OrthogonalizeBasisHelper, pxrBaseGfWrapVec{{ SUFFIX }}::OrthogonalizeBasis_overloads())
+         .staticmethod("OrthogonalizeBasis")
+ 
+         .def("BuildOrthonormalFrame",
+-             BuildOrthonormalFrameHelper, BuildOrthonormalFrame_overloads())
++             pxrBaseGfWrapVec{{ SUFFIX }}::BuildOrthonormalFrameHelper, pxrBaseGfWrapVec{{ SUFFIX }}::BuildOrthonormalFrame_overloads())
+ {% endif %}
+ {% endif %}
+ 
+-        .def("__repr__", __repr__)
+-        .def("__hash__", __hash__)
++        .def("__repr__", pxrBaseGfWrapVec{{ SUFFIX }}::__repr__)
++        .def("__hash__", pxrBaseGfWrapVec{{ SUFFIX }}::__hash__)
+         ;
+     boost::python::to_python_converter<std::vector<{{ VEC }}>,
+         TfPySequenceToPython<std::vector<{{ VEC }}> > >();
+@@ -555,12 +555,12 @@ void wrapVec{{ SUFFIX }}()
+     // this type, and set the type flags to indicate that this type supports the
+     // buffer protocol.
+     auto *typeObj = reinterpret_cast<PyTypeObject *>(cls.ptr());
+-    typeObj->tp_as_buffer = &bufferProcs;
++    typeObj->tp_as_buffer = &pxrBaseGfWrapVec{{ SUFFIX }}::bufferProcs;
+     typeObj->tp_flags |= (TfPy_TPFLAGS_HAVE_NEWBUFFER |
+                           TfPy_TPFLAGS_HAVE_GETCHARBUFFER);
+ 
+     // Allow appropriate tuples to be passed where Vecs are expected.
+-    FromPythonTuple();
++    pxrBaseGfWrapVec{{ SUFFIX }}::FromPythonTuple();
+ 
+     // Allow conversion of lists of {{ VEC }} to std::vector<{{ VEC }}>
+     TfPyContainerConversions::from_python_sequence<
+diff --git a/pxr/base/gf/wrapVec2d.cpp b/pxr/base/gf/wrapVec2d.cpp
+index bf21f8a35..80a874994 100644
+--- a/pxr/base/gf/wrapVec2d.cpp
++++ b/pxr/base/gf/wrapVec2d.cpp
+@@ -476,8 +476,8 @@ void wrapVec2d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec2d::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec2d::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec2f.cpp b/pxr/base/gf/wrapVec2f.cpp
+index 0e8df4298..1185227b1 100644
+--- a/pxr/base/gf/wrapVec2f.cpp
++++ b/pxr/base/gf/wrapVec2f.cpp
+@@ -474,8 +474,8 @@ void wrapVec2f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec2f::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec2f::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec2h.cpp b/pxr/base/gf/wrapVec2h.cpp
+index f938b291e..f230da6fa 100644
+--- a/pxr/base/gf/wrapVec2h.cpp
++++ b/pxr/base/gf/wrapVec2h.cpp
+@@ -472,8 +472,8 @@ void wrapVec2h()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec2h::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec2h::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec2i.cpp b/pxr/base/gf/wrapVec2i.cpp
+index 82187a50d..8424821ae 100644
+--- a/pxr/base/gf/wrapVec2i.cpp
++++ b/pxr/base/gf/wrapVec2i.cpp
+@@ -431,8 +431,8 @@ void wrapVec2i()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec2i::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec2i::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec3d.cpp b/pxr/base/gf/wrapVec3d.cpp
+index c61fb7278..025156563 100644
+--- a/pxr/base/gf/wrapVec3d.cpp
++++ b/pxr/base/gf/wrapVec3d.cpp
+@@ -504,8 +504,8 @@ void wrapVec3d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec3d::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec3d::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec3f.cpp b/pxr/base/gf/wrapVec3f.cpp
+index 9f0679a09..a4cd37ea6 100644
+--- a/pxr/base/gf/wrapVec3f.cpp
++++ b/pxr/base/gf/wrapVec3f.cpp
+@@ -502,8 +502,8 @@ void wrapVec3f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec3f::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec3f::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec3h.cpp b/pxr/base/gf/wrapVec3h.cpp
+index 4db735847..8feb29189 100644
+--- a/pxr/base/gf/wrapVec3h.cpp
++++ b/pxr/base/gf/wrapVec3h.cpp
+@@ -500,8 +500,8 @@ void wrapVec3h()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec3h::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec3h::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec3i.cpp b/pxr/base/gf/wrapVec3i.cpp
+index 662d741bd..3ca5372e6 100644
+--- a/pxr/base/gf/wrapVec3i.cpp
++++ b/pxr/base/gf/wrapVec3i.cpp
+@@ -433,8 +433,8 @@ void wrapVec3i()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec3i::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec3i::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec4d.cpp b/pxr/base/gf/wrapVec4d.cpp
+index ced68c3e0..a1e37e39e 100644
+--- a/pxr/base/gf/wrapVec4d.cpp
++++ b/pxr/base/gf/wrapVec4d.cpp
+@@ -480,8 +480,8 @@ void wrapVec4d()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec4d::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec4d::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec4f.cpp b/pxr/base/gf/wrapVec4f.cpp
+index e77e914a1..4d6c31d2e 100644
+--- a/pxr/base/gf/wrapVec4f.cpp
++++ b/pxr/base/gf/wrapVec4f.cpp
+@@ -478,8 +478,8 @@ void wrapVec4f()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec4f::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec4f::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec4h.cpp b/pxr/base/gf/wrapVec4h.cpp
+index ce03d880d..8ccc6dfbf 100644
+--- a/pxr/base/gf/wrapVec4h.cpp
++++ b/pxr/base/gf/wrapVec4h.cpp
+@@ -476,8 +476,8 @@ void wrapVec4h()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec4h::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec4h::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/gf/wrapVec4i.cpp b/pxr/base/gf/wrapVec4i.cpp
+index 1f8d4fb4b..161c55b46 100644
+--- a/pxr/base/gf/wrapVec4i.cpp
++++ b/pxr/base/gf/wrapVec4i.cpp
+@@ -435,8 +435,8 @@ void wrapVec4i()
+ #if PY_MAJOR_VERSION == 2
+         // Needed only to support "from __future__ import division" in
+         // python 2. In python 3 builds boost::python adds this for us.
+-        .def("__truediv__", __truediv__ )
+-        .def("__itruediv__", __itruediv__ )
++        .def("__truediv__", pxrBaseGfWrapVec4i::__truediv__ )
++        .def("__itruediv__", pxrBaseGfWrapVec4i::__itruediv__ )
+ #endif
+ 
+         .def("Axis", &Vec::Axis).staticmethod("Axis")
+diff --git a/pxr/base/js/json.cpp b/pxr/base/js/json.cpp
+index 4d447ba8b..a98a8f797 100644
+--- a/pxr/base/js/json.cpp
++++ b/pxr/base/js/json.cpp
+@@ -54,7 +54,7 @@
+ 
+ namespace rj = RAPIDJSON_NAMESPACE;
+ 
+-namespace {
++namespace pxrBaseJsJson {
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+ struct _InputHandler : public rj::BaseReaderHandler<rj::UTF8<>, _InputHandler>
+@@ -251,7 +251,7 @@ JsParseString(
+         return JsValue();
+     }
+ 
+-    _InputHandler handler;
++    pxrBaseJsJson::_InputHandler handler;
+     rj::Reader reader;
+     rj::StringStream ss(data.c_str());
+     // Need Full precision flag to round trip double values correctly.
+@@ -300,7 +300,7 @@ JsWriteToStream(
+     const rj::Value ivalue = _JsValueToImplValue(value, d.GetAllocator());
+ 
+     rj::OStreamWrapper os(ostr);
+-    _WriterFix<rj::PrettyWriter<rj::OStreamWrapper>> writer(os);
++    pxrBaseJsJson::_WriterFix<rj::PrettyWriter<rj::OStreamWrapper>> writer(os);
+     writer.SetFormatOptions(rj::kFormatSingleLineArray);
+     ivalue.Accept(writer);
+ }
+@@ -313,7 +313,7 @@ JsWriteToString(
+     const rj::Value ivalue = _JsValueToImplValue(value, d.GetAllocator());
+ 
+     rj::StringBuffer buffer;
+-     _WriterFix<rj::PrettyWriter<rj::StringBuffer>> writer(buffer);
++    pxrBaseJsJson::_WriterFix<rj::PrettyWriter<rj::StringBuffer>> writer(buffer);
+     writer.SetFormatOptions(rj::kFormatSingleLineArray);
+     ivalue.Accept(writer);
+ 
+@@ -362,7 +362,7 @@ JsWriteValue(JsWriter* writer, const JsValue& js)
+ // JsWriter
+ //
+ 
+-namespace {
++namespace pxrBaseJsJson {
+ 
+ // This helper interface is to wrap rapidJSON Writer and PrettyWriter so we can 
+ // choose which writer to use at runtime.
+@@ -442,9 +442,9 @@ public:
+ class JsWriter::_Impl
+ {
+     using PrettyWriter =
+-        Js_PolymorphicWriter<_WriterFix<rj::PrettyWriter<rj::OStreamWrapper>>>;
++        pxrBaseJsJson::Js_PolymorphicWriter<::pxrBaseJsJson::_WriterFix<rj::PrettyWriter<rj::OStreamWrapper>>>;
+     using Writer =
+-        Js_PolymorphicWriter<_WriterFix<rj::Writer<rj::OStreamWrapper>>>;
++        pxrBaseJsJson::Js_PolymorphicWriter<::pxrBaseJsJson::_WriterFix<rj::Writer<rj::OStreamWrapper>>>;
+ 
+ public:
+     _Impl(std::ostream& s, Style style) 
+@@ -460,12 +460,12 @@ public:
+         }
+     }
+     
+-    Js_PolymorphicWriterInterface* GetWriter() {
++    pxrBaseJsJson::Js_PolymorphicWriterInterface* GetWriter() {
+         return _writer.get();
+     }
+ 
+ private:
+-    std::unique_ptr<Js_PolymorphicWriterInterface> _writer;
++    std::unique_ptr<pxrBaseJsJson::Js_PolymorphicWriterInterface> _writer;
+     rj::OStreamWrapper _strWrapper;
+ };
+ 
+diff --git a/pxr/base/tf/pathUtils.cpp b/pxr/base/tf/pathUtils.cpp
+index 17aaec879..985cc0658 100644
+--- a/pxr/base/tf/pathUtils.cpp
++++ b/pxr/base/tf/pathUtils.cpp
+@@ -318,7 +318,7 @@ TfGlob(std::vector<std::string> const& paths, unsigned int flags)
+ 
+ #else
+ 
+-namespace {
++namespace pxrBaseTfPathUtils {
+ 
+ static
+ void
+@@ -399,7 +399,7 @@ TfGlob(std::vector<std::string> const& paths, unsigned int flags)
+         path = TfStringReplace(path, "/", "\\");
+ 
+         // Do the real work.
+-        Tf_Glob(&result, "", path, flags);
++        pxrBaseTfPathUtils::Tf_Glob(&result, "", path, flags);
+ 
+         // If no match and NOCHECK then append the input.
+         if ((flags & ARCH_GLOB_NOCHECK) && n == result.size()) {
+diff --git a/pxr/base/tf/registryManager.h b/pxr/base/tf/registryManager.h
+index 7cb5b2e2d..f803db211 100644
+--- a/pxr/base/tf/registryManager.h
++++ b/pxr/base/tf/registryManager.h
+@@ -169,7 +169,8 @@ public:
+                              (void(*)(KEY_TYPE*, TAG*))_Tf_RegistryFunction,   \
+                              TF_PP_STRINGIZE(KEY_TYPE));                       \
+     }                                                                          \
+-    _ARCH_ENSURE_PER_LIB_INIT(Tf_RegistryStaticInit, _tfRegistryInit);         \
++    _ARCH_ENSURE_PER_LIB_INIT(                                                 \
++        pxrBaseTfRegistryManager::Tf_RegistryStaticInit, _tfRegistryInit);     \
+     static void _Tf_RegistryFunction(KEY_TYPE*, TAG*)
+     
+ // Define a registry function outside of a template.  Follow the macro with
+@@ -185,7 +186,8 @@ public:
+                              TF_PP_CAT(_Tf_RegistryFunction, NAME),            \
+                              TF_PP_STRINGIZE(KEY_TYPE));                       \
+     }                                                                          \
+-    _ARCH_ENSURE_PER_LIB_INIT(Tf_RegistryStaticInit, _tfRegistryInit);         \
++    _ARCH_ENSURE_PER_LIB_INIT(                                                 \
++        pxrBaseTfRegistryManager::Tf_RegistryStaticInit, _tfRegistryInit);     \
+     static void TF_PP_CAT(_Tf_RegistryFunction, NAME)(KEY_TYPE*, void*)
+ 
+ 
+diff --git a/pxr/imaging/garch/glPlatformDebugWindowWindows.cpp b/pxr/imaging/garch/glPlatformDebugWindowWindows.cpp
+index 17cfea150..f4f549053 100644
+--- a/pxr/imaging/garch/glPlatformDebugWindowWindows.cpp
++++ b/pxr/imaging/garch/glPlatformDebugWindowWindows.cpp
+@@ -34,7 +34,7 @@
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+ 
+-namespace {
++namespace pxrImagingGarchGlPlatformDebugWindowWindows {
+ 
+ static
+ std::map<HWND, Garch_GLPlatformDebugWindow*>&
+@@ -96,7 +96,7 @@ Garch_GLPlatformDebugWindow::Init(const char *title,
+     }
+ 
+     ShowWindow(_hWND, SW_SHOW);
+-    _GetWindowsMap()[_hWND] = this;
++    pxrImagingGarchGlPlatformDebugWindowWindows::_GetWindowsMap()[_hWND] = this;
+     _hDC = GetDC(_hWND);
+ 
+     PIXELFORMATDESCRIPTOR pfd;
+@@ -151,7 +151,7 @@ Garch_GetModifierKeys(WPARAM wParam)
+ Garch_GLPlatformDebugWindow *
+ Garch_GLPlatformDebugWindow::_GetWindowByHandle(HWND hWND)
+ {
+-    const auto& windows = _GetWindowsMap();
++    const auto& windows = pxrImagingGarchGlPlatformDebugWindowWindows::_GetWindowsMap();
+     auto it = windows.find(hWND);
+     if (it != windows.end()) {
+         return it->second;
+@@ -252,7 +252,7 @@ Garch_GLPlatformDebugWindow::Run()
+     wglDeleteContext(_hGLRC);
+     ReleaseDC(_hWND, _hDC);
+ 
+-    _GetWindowsMap().erase(_hWND);
++    pxrImagingGarchGlPlatformDebugWindowWindows::_GetWindowsMap().erase(_hWND);
+     _hWND = 0;
+ }
+ 
+diff --git a/pxr/imaging/hgiInterop/metal.mm b/pxr/imaging/hgiInterop/metal.mm
+index 74d8497bf..96397b374 100644
+--- a/pxr/imaging/hgiInterop/metal.mm
++++ b/pxr/imaging/hgiInterop/metal.mm
+@@ -35,7 +35,7 @@
+ 
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+-namespace {
++namespace pxrImagingHgiInteropMetal {
+     struct Vertex {
+         float position[2];
+         float uv[2];
+@@ -178,18 +178,18 @@ HgiInteropMetal::_CreateShaderContext(
+                               2,
+                               GL_FLOAT,
+                               GL_FALSE,
+-                              sizeof(Vertex),
+-                              (void*)(offsetof(Vertex, position)));
++                              sizeof(pxrImagingHgiInteropMetal::Vertex),
++                              (void*)(offsetof(pxrImagingHgiInteropMetal::Vertex, position)));
+         glEnableVertexAttribArray(shader.texAttrib);
+         glVertexAttribPointer(shader.texAttrib,
+                               2,
+                               GL_FLOAT,
+                               GL_FALSE,
+-                              sizeof(Vertex),
+-                              (void*)(offsetof(Vertex, uv)));
++                              sizeof(pxrImagingHgiInteropMetal::Vertex),
++                              (void*)(offsetof(pxrImagingHgiInteropMetal::Vertex, uv)));
+     }
+     
+-    Vertex v[12] = {
++    pxrImagingHgiInteropMetal::Vertex v[12] = {
+         { {-1, -1}, {0, 0} },
+         { { 1, -1}, {1, 0} },
+         { {-1,  1}, {0, 1} },
+@@ -829,12 +829,12 @@ HgiInteropMetal::_BlitToOpenGL(VtValue const &framebuffer,
+ 
+         glEnableVertexAttribArray(shader.posAttrib);
+         glVertexAttribPointer(
+-            shader.posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+-            (void*)(offsetof(Vertex, position)));
++            shader.posAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(pxrImagingHgiInteropMetal::Vertex),
++            (void*)(offsetof(pxrImagingHgiInteropMetal::Vertex, position)));
+         glEnableVertexAttribArray(shader.texAttrib);
+         glVertexAttribPointer(
+-            shader.texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+-            (void*)(offsetof(Vertex, uv)));
++            shader.texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(pxrImagingHgiInteropMetal::Vertex),
++            (void*)(offsetof(pxrImagingHgiInteropMetal::Vertex, uv)));
+     }
+ 
+     GLint unit = 0;
+diff --git a/pxr/imaging/hgiMetal/shaderGenerator.mm b/pxr/imaging/hgiMetal/shaderGenerator.mm
+index bc225a8a2..f3f474596 100644
+--- a/pxr/imaging/hgiMetal/shaderGenerator.mm
++++ b/pxr/imaging/hgiMetal/shaderGenerator.mm
+@@ -39,7 +39,7 @@ HgiMetalShaderGenerator::CreateShaderSection(T && ...t)
+     return result;
+ }
+ 
+-namespace {
++namespace pxrImagingHgiMetalShaderGenerator {
+ 
+ //This is a conversion layer from descriptors into shader sections
+ //In purity we don't want the shader generator to know how to
+@@ -170,7 +170,7 @@ private:
+     const std::string _inputInstanceName;
+ };
+ 
+-namespace {
++namespace pxrImagingHgiMetalShaderGenerator {
+ 
+ //This is used by the macro blob, basically this is dumped on top
+ //of the generated shader
+@@ -567,7 +567,7 @@ std::string _BuildOutputTypeName(const HgiMetalShaderStageEntryPoint &ep)
+ } // anonymous namespace
+ 
+ HgiMetalShaderStageEntryPoint::HgiMetalShaderStageEntryPoint(
+-      const ShaderStageData &stageData,
++      const pxrImagingHgiMetalShaderGenerator::ShaderStageData &stageData,
+       HgiMetalShaderGenerator *generator,
+       const std::string &outputShortHandPrefix,
+       const std::string &scopePostfix,
+@@ -576,7 +576,7 @@ HgiMetalShaderStageEntryPoint::HgiMetalShaderStageEntryPoint(
+     : _outputShortHandPrefix(outputShortHandPrefix),
+       _scopePostfix(scopePostfix),
+       _entryPointStageName(entryPointStageName),
+-      _outputTypeName(_BuildOutputTypeName(*this)),
++      _outputTypeName(pxrImagingHgiMetalShaderGenerator::_BuildOutputTypeName(*this)),
+       _entryPointFunctionName(entryPointStageName + "EntryPoint"),
+       _inputInstanceName(inputInstanceName)
+ {
+@@ -588,7 +588,7 @@ HgiMetalShaderStageEntryPoint::HgiMetalShaderStageEntryPoint(
+ }
+ 
+ HgiMetalShaderStageEntryPoint::HgiMetalShaderStageEntryPoint(
+-    const ShaderStageData &stageData,
++    const pxrImagingHgiMetalShaderGenerator::ShaderStageData &stageData,
+     HgiMetalShaderGenerator *generator,
+     const std::string &outputShortHandPrefix,
+     const std::string &scopePostfix,
+@@ -721,7 +721,7 @@ HgiMetalShaderStageEntryPoint::_Init(
+     HgiMetalShaderGenerator *generator)
+ {
+     _parameters =
+-        _BuildStructInstance<HgiMetalArgumentBufferInputShaderSection>(
++        pxrImagingHgiMetalShaderGenerator::_BuildStructInstance<HgiMetalArgumentBufferInputShaderSection>(
+         GetConstantBufferTypeName(),
+         GetConstantBufferInstanceName(),
+         /* attribute = */ "buffer(0)",
+@@ -731,7 +731,7 @@ HgiMetalShaderStageEntryPoint::_Init(
+         generator);
+ 
+     _inputs =
+-        _BuildStructInstance<HgiMetalArgumentBufferInputShaderSection>(
++        pxrImagingHgiMetalShaderGenerator::_BuildStructInstance<HgiMetalArgumentBufferInputShaderSection>(
+         GetInputsTypeName(),
+         GetInputsInstanceName(),
+         /* attribute = */ "stage_in",
+@@ -741,7 +741,7 @@ HgiMetalShaderStageEntryPoint::_Init(
+         generator);
+ 
+     _outputs =
+-        _BuildStructInstance<HgiMetalStageOutputShaderSection>(
++        pxrImagingHgiMetalShaderGenerator::_BuildStructInstance<HgiMetalStageOutputShaderSection>(
+         GetOutputTypeName(),
+         GetOutputInstanceName(),
+         /* attribute = */ std::string(),
+@@ -879,7 +879,7 @@ HgiMetalShaderGenerator::_BuildShaderStageEntryPoints(
+     _BuildKeywordInputShaderSections(descriptor);
+ 
+     //Create differing shader function signature based on stage
+-    const ShaderStageData stageData(descriptor, this);
++    const pxrImagingHgiMetalShaderGenerator::ShaderStageData stageData(descriptor, this);
+     
+     switch (descriptor.shaderStage) {
+         case HgiShaderStageVertex: {
+@@ -928,7 +928,7 @@ HgiMetalShaderGenerator::HgiMetalShaderGenerator(
+   , _computeThreadGroupSize(GfVec3i(0))
+ {
+     CreateShaderSection<HgiMetalMacroShaderSection>(
+-        _GetHeader(device),
++        pxrImagingHgiMetalShaderGenerator::_GetHeader(device),
+         "Headers");
+ 
+     if (descriptor.shaderStage == HgiShaderStageCompute) {
+diff --git a/pxr/imaging/hgiVulkan/resourceBindings.cpp b/pxr/imaging/hgiVulkan/resourceBindings.cpp
+index f8a15b364..8a87deb74 100644
+--- a/pxr/imaging/hgiVulkan/resourceBindings.cpp
++++ b/pxr/imaging/hgiVulkan/resourceBindings.cpp
+@@ -36,7 +36,7 @@
+ 
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+-namespace {
++namespace pxrImagingHgiVulkanResourceBindings {
+     static const uint8_t _descriptorSetCnt = 1;
+ }
+ 
+@@ -173,7 +173,7 @@ HgiVulkanResourceBindings::HgiVulkanResourceBindings(
+     VkDescriptorPoolCreateInfo pool_info = {};
+     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+     pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+-    pool_info.maxSets = _descriptorSetCnt;
++    pool_info.maxSets = pxrImagingHgiVulkanResourceBindings::_descriptorSetCnt;
+     pool_info.poolSizeCount = (uint32_t) poolSizes.size();
+     pool_info.pPoolSizes = poolSizes.data();
+ 
+@@ -202,7 +202,7 @@ HgiVulkanResourceBindings::HgiVulkanResourceBindings(
+         {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+ 
+     allocateInfo.descriptorPool = _vkDescriptorPool;
+-    allocateInfo.descriptorSetCount = _descriptorSetCnt;
++    allocateInfo.descriptorSetCount = pxrImagingHgiVulkanResourceBindings::_descriptorSetCnt;
+     allocateInfo.pSetLayouts = &_vkDescriptorSetLayout;
+ 
+     TF_VERIFY(
+@@ -398,7 +398,7 @@ HgiVulkanResourceBindings::BindResources(
+         bindPoint,
+         layout,
+         0, // firstSet/slot - Hgi does not provide slot index, assume 0.
+-        _descriptorSetCnt,
++        pxrImagingHgiVulkanResourceBindings::_descriptorSetCnt,
+         &_vkDescriptorSet,
+         0, // dynamicOffset
+         nullptr);
+diff --git a/pxr/imaging/pxOsd/refinerFactory.cpp b/pxr/imaging/pxOsd/refinerFactory.cpp
+index f9ec0a8e2..aed9ecf09 100644
+--- a/pxr/imaging/pxOsd/refinerFactory.cpp
++++ b/pxr/imaging/pxOsd/refinerFactory.cpp
+@@ -204,8 +204,8 @@ namespace Far {
+ 
+ //----------------------------------------------------------
+ template <> inline bool
+-TopologyRefinerFactory<PXR_NS::Converter>::resizeComponentTopology(
+-    Far::TopologyRefiner & refiner, PXR_NS::Converter const & converter) {
++TopologyRefinerFactory<PXR_NS::pxrImagingPxOsdRefinerFactory::Converter>::resizeComponentTopology(
++    Far::TopologyRefiner & refiner, PXR_NS::pxrImagingPxOsdRefinerFactory::Converter const & converter) {
+ 
+     PXR_NAMESPACE_USING_DIRECTIVE
+ 
+@@ -237,8 +237,8 @@ TopologyRefinerFactory<PXR_NS::Converter>::resizeComponentTopology(
+ //----------------------------------------------------------
+ template <>
+ inline bool
+-TopologyRefinerFactory<PXR_NS::Converter>::assignComponentTopology(
+-    Far::TopologyRefiner & refiner, PXR_NS::Converter const & converter) {
++TopologyRefinerFactory<PXR_NS::pxrImagingPxOsdRefinerFactory::Converter>::assignComponentTopology(
++    Far::TopologyRefiner & refiner, PXR_NS::pxrImagingPxOsdRefinerFactory::Converter const & converter) {
+ 
+     PXR_NAMESPACE_USING_DIRECTIVE
+ 
+@@ -270,8 +270,8 @@ TopologyRefinerFactory<PXR_NS::Converter>::assignComponentTopology(
+ 
+ template <>
+ inline bool
+-TopologyRefinerFactory<PXR_NS::Converter>::assignComponentTags(
+-    Far::TopologyRefiner & refiner, PXR_NS::Converter const & converter) {
++TopologyRefinerFactory<PXR_NS::pxrImagingPxOsdRefinerFactory::Converter>::assignComponentTags(
++    Far::TopologyRefiner & refiner, PXR_NS::pxrImagingPxOsdRefinerFactory::Converter const & converter) {
+ 
+     PXR_NAMESPACE_USING_DIRECTIVE
+ 
+@@ -398,8 +398,8 @@ TopologyRefinerFactory<PXR_NS::Converter>::assignComponentTags(
+ 
+ template <>
+ bool
+-TopologyRefinerFactory<PXR_NS::Converter>::assignFaceVaryingTopology(
+-    TopologyRefiner & refiner, PXR_NS::Converter const & converter) {
++TopologyRefinerFactory<PXR_NS::pxrImagingPxOsdRefinerFactory::Converter>::assignFaceVaryingTopology(
++    TopologyRefiner & refiner, PXR_NS::pxrImagingPxOsdRefinerFactory::Converter const & converter) {
+ 
+     PXR_NAMESPACE_USING_DIRECTIVE
+ 
+@@ -447,9 +447,9 @@ TopologyRefinerFactory<PXR_NS::Converter>::assignFaceVaryingTopology(
+ //----------------------------------------------------------
+ template <>
+ inline void
+-TopologyRefinerFactory<PXR_NS::Converter>::reportInvalidTopology(
++TopologyRefinerFactory<PXR_NS::pxrImagingPxOsdRefinerFactory::Converter>::reportInvalidTopology(
+     TopologyRefinerFactory::TopologyError /* errCode */,
+-        char const * msg, PXR_NS::Converter const & converter) {
++        char const * msg, PXR_NS::pxrImagingPxOsdRefinerFactory::Converter const & converter) {
+     PXR_NAMESPACE_USING_DIRECTIVE
+     TF_WARN("%s (%s)", msg, converter.name.GetText());
+ }
+diff --git a/pxr/usd/ar/wrapResolverContext_v1.cpp b/pxr/usd/ar/wrapResolverContext_v1.cpp
+index 130336b79..697804861 100644
+--- a/pxr/usd/ar/wrapResolverContext_v1.cpp
++++ b/pxr/usd/ar/wrapResolverContext_v1.cpp
+@@ -31,7 +31,7 @@
+ 
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+-namespace {
++namespace pxrUsdArWrapResolverContext_v1 {
+ 
+ struct Ar_ResolverContextToPython
+ {
+@@ -86,6 +86,6 @@ struct Ar_ResolverContextFromPython
+ void
+ wrapResolverContext()
+ {
+-    Ar_ResolverContextToPython();
+-    Ar_ResolverContextFromPython();
++    pxrUsdArWrapResolverContext_v1::Ar_ResolverContextToPython();
++    pxrUsdArWrapResolverContext_v1::Ar_ResolverContextFromPython();
+ }
+diff --git a/pxr/usd/ar/wrapResolverContext_v2.cpp b/pxr/usd/ar/wrapResolverContext_v2.cpp
+index 382fed87d..091e8cb42 100644
+--- a/pxr/usd/ar/wrapResolverContext_v2.cpp
++++ b/pxr/usd/ar/wrapResolverContext_v2.cpp
+@@ -39,7 +39,7 @@
+ 
+ PXR_NAMESPACE_USING_DIRECTIVE
+ 
+-namespace {
++namespace pxrUsdArWrapResolverContext_v2 {
+ 
+ // Helper struct to allow implicit conversions from None or a
+ // sequence of context objects to an Ar.ResolverContext object.
+@@ -133,7 +133,7 @@ _TestImplicitConversion(const ArResolverContext& ctx)
+ void
+ wrapResolverContext()
+ {
+-    Ar_ResolverContextFromPython();
++    pxrUsdArWrapResolverContext_v2::Ar_ResolverContextFromPython();
+ 
+     boost::python::class_<ArResolverContext>
+         ("ResolverContext", boost::python::no_init)
+diff --git a/pxr/usd/plugin/usdAbc/alembicReader.cpp b/pxr/usd/plugin/usdAbc/alembicReader.cpp
+index 267dc3b4e..a276e07d1 100644
+--- a/pxr/usd/plugin/usdAbc/alembicReader.cpp
++++ b/pxr/usd/plugin/usdAbc/alembicReader.cpp
+@@ -4100,7 +4100,7 @@ UsdAbc_AlembicDataReader::TimeSamples::Bracket(
+ template
+ bool
+ UsdAbc_AlembicDataReader::TimeSamples::Bracket(
+-    const UsdAbc_TimeSamples& samples, double usdTime,
++    const pxrUsdPluginUsdAbcAlembicReader::UsdAbc_TimeSamples& samples, double usdTime,
+     double* tLower, double* tUpper);
+ 
+ bool
+@@ -4182,7 +4182,7 @@ UsdAbc_AlembicDataReader::HasField(
+     const TfToken& fieldName,
+     SdfAbstractDataValue* value) const
+ {
+-    return _impl->HasField(path, fieldName, UsdAbc_AlembicDataAny(value));
++    return _impl->HasField(path, fieldName, pxrUsdPluginUsdAbcAlembicReader::UsdAbc_AlembicDataAny(value));
+ }
+ 
+ bool
+@@ -4191,7 +4191,7 @@ UsdAbc_AlembicDataReader::HasField(
+     const TfToken& fieldName,
+     VtValue* value) const
+ {
+-    return _impl->HasField(path, fieldName, UsdAbc_AlembicDataAny(value));
++    return _impl->HasField(path, fieldName, pxrUsdPluginUsdAbcAlembicReader::UsdAbc_AlembicDataAny(value));
+ }
+ 
+ bool
+@@ -4200,7 +4200,7 @@ UsdAbc_AlembicDataReader::HasValue(
+     Index index,
+     SdfAbstractDataValue* value) const
+ {
+-    return _impl->HasValue(path, index, UsdAbc_AlembicDataAny(value));
++    return _impl->HasValue(path, index, pxrUsdPluginUsdAbcAlembicReader::UsdAbc_AlembicDataAny(value));
+ }
+ 
+ bool
+@@ -4209,7 +4209,7 @@ UsdAbc_AlembicDataReader::HasValue(
+     Index index,
+     VtValue* value) const
+ {
+-    return _impl->HasValue(path, index, UsdAbc_AlembicDataAny(value));
++    return _impl->HasValue(path, index, pxrUsdPluginUsdAbcAlembicReader::UsdAbc_AlembicDataAny(value));
+ }
+ 
+ void
+diff --git a/pxr/usd/plugin/usdAbc/alembicWriter.cpp b/pxr/usd/plugin/usdAbc/alembicWriter.cpp
+index 871e9ca2e..ce86f755e 100644
+--- a/pxr/usd/plugin/usdAbc/alembicWriter.cpp
++++ b/pxr/usd/plugin/usdAbc/alembicWriter.cpp
+@@ -3743,7 +3743,7 @@ UsdAbc_AlembicDataWriter::Open(
+ 
+     try {
+         _impl->SetArchive(
+-            CreateArchiveWithInfo(Alembic::AbcCoreOgawa::WriteArchive(),
++            Alembic::Abc::CreateArchiveWithInfo(Alembic::AbcCoreOgawa::WriteArchive(),
+                                   filePath, writerName, comment));
+         return true;
+     }
+@@ -3787,7 +3787,7 @@ UsdAbc_AlembicDataWriter::Close()
+     //
+     // For now we just destroy the archive and don't bother looking for
+     // errors.
+-    _impl->SetArchive(OArchive());
++    _impl->SetArchive(Alembic::Abc::OArchive());
+     return true;
+ }
+ 
+diff --git a/pxr/usd/sdf/textFileFormat.yy b/pxr/usd/sdf/textFileFormat.yy
+index 20f0814eb..6a150b73e 100644
+--- a/pxr/usd/sdf/textFileFormat.yy
++++ b/pxr/usd/sdf/textFileFormat.yy
+@@ -181,7 +181,7 @@ _HasDuplicates(const std::vector<T> &v)
+     return _GeneralHasDuplicates(v);
+ }
+ 
+-namespace
++namespace pxrUsdSdfTextFileFormat
+ {
+ template <class T> 
+ const std::vector<T>& _ToItemVector(const std::vector<T>& v)
+@@ -205,7 +205,7 @@ _SetListOpItems(const TfToken &key, SdfListOpType type,
+     typedef SdfListOp<typename T::value_type> ListOpType;
+     typedef typename ListOpType::ItemVector ItemVector;
+ 
+-    const ItemVector& items = _ToItemVector(itemList);
++    const ItemVector& items = pxrUsdSdfTextFileFormat::_ToItemVector(itemList);
+ 
+     if (_HasDuplicates(items)) {
+         Err(context, "Duplicate items exist for field '%s' at '%s'",
+@@ -3236,7 +3236,7 @@ extern int yydebug;
+ static int yydebug;
+ #endif // SDF_PARSER_DEBUG_MODE
+ 
+-namespace {
++namespace pxrUsdSdfTextFileFormat {
+ struct _DebugContext {
+     explicit _DebugContext(bool state=true) : _old(yydebug) { yydebug = state; }
+     ~_DebugContext() { yydebug = _old; }
+@@ -3261,7 +3261,7 @@ Sdf_ParseLayer(
+     TRACE_FUNCTION();
+ 
+     // Turn on debugging, if enabled.
+-    _DebugContext debugCtx;
++    pxrUsdSdfTextFileFormat::_DebugContext debugCtx;
+ 
+     // Configure for input file.
+     Sdf_TextParserContext context;
+diff --git a/pxr/usd/usd/crateFile.cpp b/pxr/usd/usd/crateFile.cpp
+index 9eca8a65e..3b188463e 100644
+--- a/pxr/usd/usd/crateFile.cpp
++++ b/pxr/usd/usd/crateFile.cpp
+@@ -4025,7 +4025,7 @@ void
+ CrateFile::_DeleteValueHandlers() {
+ #define xx(_unused1, _unused2, T, _unused3)                                    \
+     delete static_cast<_ValueHandler<T> *>(                                    \
+-        _valueHandlers[static_cast<int>(TypeEnumFor<T>())]);
++        _valueHandlers[static_cast<int>(pxrUsdUsdCrateFile::TypeEnumFor<T>())]);
+ 
+ #include "crateDataTypes.h"
+ 
+@@ -4036,7 +4036,7 @@ void
+ CrateFile::_ClearValueHandlerDedupTables() {
+ #define xx(_unused1, _unused2, T, _unused3)                                    \
+     static_cast<_ValueHandler<T> *>(                                           \
+-        _valueHandlers[static_cast<int>(TypeEnumFor<T>())])->Clear();
++        _valueHandlers[static_cast<int>(pxrUsdUsdCrateFile::TypeEnumFor<T>())])->Clear();
+ 
+ #include "crateDataTypes.h"
+ 
+diff --git a/pxr/usd/usdGeom/wrapHermiteCurves.cpp b/pxr/usd/usdGeom/wrapHermiteCurves.cpp
+index c34e0967e..76daca5f1 100644
+--- a/pxr/usd/usdGeom/wrapHermiteCurves.cpp
++++ b/pxr/usd/usdGeom/wrapHermiteCurves.cpp
+@@ -153,7 +153,7 @@ WRAP_CUSTOM {
+             .def("Interleave", &ThisStruct::Interleave)
+             .def("Separate", &ThisStruct::Separate)
+             .staticmethod("Separate")
+-            .def("__repr__", &::_PointAndTangentsRepr)
++            .def("__repr__", &pxrUsdUsdGeomWrapHermiteCurves::_PointAndTangentsRepr)
+             .def(!boost::python::self)
+             .def(boost::python::self == boost::python::self)
+             .def(boost::python::self != boost::python::self);
+diff --git a/pxr/usd/usdSkel/bakeSkinning.cpp b/pxr/usd/usdSkel/bakeSkinning.cpp
+index 8fb3e900b..b6735f4ad 100644
+--- a/pxr/usd/usdSkel/bakeSkinning.cpp
++++ b/pxr/usd/usdSkel/bakeSkinning.cpp
+@@ -628,7 +628,7 @@ _SkelAdapter::_SkelAdapter(const UsdSkelBakeSkinningParms& parms,
+                 // Also active computation for skel's local to world transform.
+                 _skelLocalToWorldXformTask.SetActive(true, /*required*/ false);
+                 _skelLocalToWorldXformTask.SetMightBeTimeVarying(
+-                    _WorldTransformMightBeTimeVarying(
++                    pxrUsdUsdSkelBakeSkinning::_WorldTransformMightBeTimeVarying(
+                         skel.GetPrim(), xformCache));
+             }
+         }
+@@ -690,7 +690,7 @@ _SkelAdapter::ExtendTimeSamples(const GfInterval& interval,
+         }
+     }
+     if (_skelLocalToWorldXformTask) {
+-        _ExtendWorldTransformTimeSamples(GetPrim(), interval, times);
++        pxrUsdUsdSkelBakeSkinning::_ExtendWorldTransformTimeSamples(GetPrim(), interval, times);
+     }
+ }
+ 
+@@ -1192,7 +1192,7 @@ _SkinningAdapter::_SkinningAdapter(
+     if (_flags & RequiresPrimLocalToWorldXform) {
+         _localToWorldXformTask.SetActive(true);
+         _localToWorldXformTask.SetMightBeTimeVarying(
+-            _WorldTransformMightBeTimeVarying(
++            pxrUsdUsdSkelBakeSkinning::_WorldTransformMightBeTimeVarying(
+                 skinningQuery.GetPrim(), xformCache));
+     }
+ 
+@@ -1201,7 +1201,7 @@ _SkinningAdapter::_SkinningAdapter(
+         if (!xformCache->GetResetXformStack(skinningQuery.GetPrim())) {
+             _parentToWorldXformTask.SetActive(true);
+             _parentToWorldXformTask.SetMightBeTimeVarying(
+-                _WorldTransformMightBeTimeVarying(
++                pxrUsdUsdSkelBakeSkinning::_WorldTransformMightBeTimeVarying(
+                     skinningQuery.GetPrim().GetParent(), xformCache));
+         } else {
+             // Parent xform will always be identity.
+@@ -1279,11 +1279,11 @@ _SkinningAdapter::ExtendTimeSamples(const GfInterval& interval,
+         }
+     }
+     if (_localToWorldXformTask) {
+-        _ExtendWorldTransformTimeSamples(_skinningQuery.GetPrim(),
++        pxrUsdUsdSkelBakeSkinning::_ExtendWorldTransformTimeSamples(_skinningQuery.GetPrim(),
+                                          interval, times);
+     }
+     if  (_parentToWorldXformTask) {
+-        _ExtendWorldTransformTimeSamples(_skinningQuery.GetPrim().GetParent(),
++        pxrUsdUsdSkelBakeSkinning::_ExtendWorldTransformTimeSamples(_skinningQuery.GetPrim().GetParent(),
+                                          interval, times);
+     }
+ }

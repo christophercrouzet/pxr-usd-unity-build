@@ -1,0 +1,99 @@
+diff --git a/cmake/macros/Private.cmake b/cmake/macros/Private.cmake
+index 6f0585de8..ec1a487ee 100644
+--- a/cmake/macros/Private.cmake
++++ b/cmake/macros/Private.cmake
+@@ -696,6 +696,34 @@ function(_pxr_transitive_internal_libraries libs transitive_libs)
+     set(${transitive_libs} "${result}" PARENT_SCOPE)
+ endfunction()
+ 
++# Write a .cpp file that includes other files describing a new compilation unit.
++function(_pxr_setup_unity_build out name files exclude)
++    set(includes "")
++    set(excludes "")
++    foreach (file ${files})
++        list(FIND exclude ${file} excluded)
++        if (${excluded} GREATER "-1")
++            set(
++                excludes
++                "${excludes}${file};"
++            )
++        else()
++            set(
++                includes
++                "${includes}#include <${CMAKE_CURRENT_SOURCE_DIR}/${file}>\n"
++            )
++        endif()
++    endforeach()
++
++    set(file "${CMAKE_CURRENT_BINARY_DIR}/${name}.cpp")
++    file(
++        WRITE ${file}
++        ${includes}
++    )
++
++    set(${out} "${file};${excludes}" PARENT_SCOPE)
++endfunction()
++
+ # This function is equivalent to target_link_libraries except it does
+ # a few extra things:
+ #
+diff --git a/cmake/macros/Public.cmake b/cmake/macros/Public.cmake
+index 1ba646b81..52b37cd67 100644
+--- a/cmake/macros/Public.cmake
++++ b/cmake/macros/Public.cmake
+@@ -236,6 +236,7 @@ function(pxr_library NAME)
+         PYMODULE_CPPFILES
+         PYMODULE_FILES
+         PYSIDE_UI_FILES
++        UNITY_BUILD_EXCLUDE_FILES
+     )
+ 
+     cmake_parse_arguments(args
+@@ -324,12 +325,22 @@ function(pxr_library NAME)
+         set(pch "OFF")
+     endif()
+ 
++    set(cppfiles "${args_CPPFILES};${${NAME}_CPPFILES}")
++    if (PXR_ENABLE_UNITY_BUILD)
++        _pxr_setup_unity_build(
++            cppfiles
++            "library_unit"
++            "${cppfiles}"
++            "${args_UNITY_BUILD_EXCLUDE_FILES}"
++        )
++    endif()
++
+     _pxr_library(${NAME}
+         TYPE "${args_TYPE}"
+         PREFIX "${prefix}"
+         SUFFIX "${suffix}"
+         SUBDIR "${subdir}"
+-        CPPFILES "${args_CPPFILES};${${NAME}_CPPFILES}"
++        CPPFILES "${cppfiles}"
+         PUBLIC_HEADERS "${args_PUBLIC_HEADERS};${${NAME}_PUBLIC_HEADERS}"
+         PRIVATE_HEADERS "${args_PRIVATE_HEADERS};${${NAME}_PRIVATE_HEADERS}"
+         LIBRARIES "${args_LIBRARIES}"
+@@ -342,12 +353,22 @@ function(pxr_library NAME)
+     )
+ 
+     if(PXR_ENABLE_PYTHON_SUPPORT AND (args_PYMODULE_CPPFILES OR args_PYMODULE_FILES OR args_PYSIDE_UI_FILES))
++        set(cppfiles "${args_PYMODULE_CPPFILES}")
++        if (PXR_ENABLE_UNITY_BUILD)
++            _pxr_setup_unity_build(
++                cppfiles
++                "python_module_unit"
++                "${cppfiles}"
++                "${args_UNITY_BUILD_EXCLUDE_FILES}"
++            )
++        endif()
++
+         _pxr_python_module(
+             ${NAME}
+             WRAPPED_LIB_INSTALL_PREFIX "${libInstallPrefix}"
+             PYTHON_FILES ${args_PYMODULE_FILES}
+             PYSIDE_UI_FILES ${args_PYSIDE_UI_FILES}
+-            CPPFILES ${args_PYMODULE_CPPFILES}
++            CPPFILES ${cppfiles}
+             INCLUDE_DIRS ${args_INCLUDE_DIRS}
+             PRECOMPILED_HEADERS ${pch}
+             PRECOMPILED_HEADER_NAME ${args_PRECOMPILED_HEADER_NAME}

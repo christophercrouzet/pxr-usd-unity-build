@@ -1,0 +1,4 @@
+[submodule "deps/USD"]
+	path = deps/USD
+	url = git@github.com:PixarAnimationStudios/USD.git
+	branch = dev

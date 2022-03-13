@@ -1,0 +1,35 @@
+diff --git a/pxr/imaging/hd/command.cpp b/pxr/imaging/hd/command.cpp
+index 303124383..8c4e32101 100644
+--- a/pxr/imaging/hd/command.cpp
++++ b/pxr/imaging/hd/command.cpp
+@@ -25,8 +25,4 @@
+ 
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+-HdCommandArgDescriptor::HdCommandArgDescriptor() = default;
+-
+-HdCommandDescriptor::HdCommandDescriptor() = default;
+-
+ PXR_NAMESPACE_CLOSE_SCOPE
+diff --git a/pxr/imaging/hd/command.h b/pxr/imaging/hd/command.h
+index 67e8db3ce..059ba4b34 100644
+--- a/pxr/imaging/hd/command.h
++++ b/pxr/imaging/hd/command.h
+@@ -44,7 +44,7 @@ PXR_NAMESPACE_OPEN_SCOPE
+ ///
+ struct HdCommandArgDescriptor
+ {
+-    HdCommandArgDescriptor();
++    HdCommandArgDescriptor() = default;
+ 
+     HdCommandArgDescriptor(const TfToken &argName,
+                            const VtValue &defaultValue_) 
+@@ -77,7 +77,7 @@ using HdCommandArgs = VtDictionary;
+ ///
+ struct HdCommandDescriptor
+ {
+-    HdCommandDescriptor();
++    HdCommandDescriptor() noexcept = default;
+ 
+     explicit HdCommandDescriptor(
+                const TfToken &name_, 
